@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《本草纲目序》在线测试</title>
+    <style>
+        :root {
+            --bg: #f5f0e8;
+            --paper: #fdfaf3;
+            --text: #3e2f1c;
+            --text-light: #5c4a2e;
+            --border: #c4a87c;
+            --gold: #8b6914;
+            --red-accent: #a0523b;
+            --green-accent: #4a7c59;
+            --correct-bg: #e8f5e9;
+            --wrong-bg: #fdecea;
+            --correct-border: #81c784;
+            --wrong-border: #e57373;
+            --btn-primary: #6b3a2e;
+            --btn-hover: #8b4c3d;
+            --shadow: 0 4px 20px rgba(62, 47, 28, 0.12);
+            --radius: 10px;
+            --font-cn: "STSong", "Songti SC", "Noto Serif SC", "KaiTi", "STKaiti", "楷体", "SimSun", "宋体", serif;
+            --font-ui: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #efe5d5 0%, #f0e6d3 30%, #e8dcc8 60%, #f5f0e8 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: var(--font-ui);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px 12px 40px;
+            position: relative;
+        }
+
+        /* 背景装饰纹理 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(ellipse at 20% 15%, rgba(180, 150, 120, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 70%, rgba(160, 130, 90, 0.06) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 40%, rgba(200, 170, 130, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 800px;
+            background: var(--paper);
+            border-radius: 16px;
+            box-shadow: var(--shadow), 0 0 0 1px rgba(180, 150, 120, 0.25);
+            padding: 0;
+            overflow: hidden;
+            border: 8px solid transparent;
+            border-image: linear-gradient(135deg, #d4c4a8 0%, #c4a87c 25%, #d9c9a5 50%, #bfa378 75%, #d4c4a8 100%) 1;
+            border-radius: 16px;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            background: linear-gradient(180deg, #fdfaf3 0%, #f8f2e6 100%);
+            padding: 28px 30px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+        .header .icon {
+            font-size: 42px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .header h1 {
+            font-family: var(--font-cn);
+            font-size: 28px;
+            font-weight: 700;
+            color: #3e2f1c;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+        .header .subtitle {
+            font-family: var(--font-cn);
+            font-size: 14px;
+            color: #7a6b55;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* 内容区 */
+        .content {
+            padding: 24px 28px 30px;
+        }
+
+        /* 步骤指示器 */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            color: #b0a08a;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .step.active {
+            color: var(--red-accent);
+            font-weight: 700;
+        }
+        .step.done {
+            color: var(--green-accent);
+        }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            border: 2px solid #d0c4b0;
+            background: #fdfaf3;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .step.active .step-num {
+            border-color: var(--red-accent);
+            background: #fdf2ef;
+            color: var(--red-accent);
+        }
+        .step.done .step-num {
+            border-color: var(--green-accent);
+            background: #e8f5e9;
+            color: var(--green-accent);
+        }
+        .step-connector {
+            width: 30px;
+            height: 2px;
+            background: #d0c4b0;
+            align-self: center;
+            margin: 0 -4px;
+            transition: all 0.3s;
+        }
+        .step-connector.done {
+            background: var(--green-accent);
+        }
+
+        /* 面板 */
+        .panel {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+        .panel.active {
+            display: block;
+        }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #4a3720;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d4c4a8;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #fefcf7;
+            color: #3e2f1c;
+            transition: all 0.3s;
+            font-family: var(--font-ui);
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.08);
+            background: #fffefb;
+        }
+        .info-card {
+            background: #fdf8f0;
+            border: 1px dashed #d4c4a8;
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #6b5a3e;
+            line-height: 1.7;
+        }
+        .info-card strong {
+            color: #4a3720;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            font-family: var(--font-ui);
+            text-align: center;
+        }
+        .btn-primary {
+            background: var(--btn-primary);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(107, 58, 46, 0.3);
+        }
+        .btn-primary:hover {
+            background: var(--btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 58, 46, 0.4);
+        }
+        .btn-secondary {
+            background: #fdfaf3;
+            color: #4a3720;
+            border: 2px solid #c4a87c;
+        }
+        .btn-secondary:hover {
+            background: #f8f2e6;
+            border-color: #8b6914;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        .btn-lg {
+            padding: 14px 36px;
+            font-size: 16px;
+            letter-spacing: 2px;
+        }
+
+        /* 题目样式 */
+        .question-block {
+            background: #fefcf7;
+            border: 1px solid #e8dcc8;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .question-block:hover {
+            border-color: #c4a87c;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .question-block.correct-flash {
+            border-color: var(--correct-border) !important;
+            background: var(--correct-bg) !important;
+        }
+        .question-block.wrong-flash {
+            border-color: var(--wrong-border) !important;
+            background: var(--wrong-bg) !important;
+        }
+        .q-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .q-num {
+            font-weight: 700;
+            font-size: 15px;
+            color: #fff;
+            background: var(--btn-primary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 13px;
+        }
+        .q-info {
+            flex: 1;
+        }
+        .q-type-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .badge-word {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .badge-trans {
+            background: #e8f0fe;
+            color: #1a5fa8;
+        }
+        .badge-bg {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+        .badge-judge {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .q-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #3e2f1c;
+            font-weight: 500;
+        }
+        .q-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .q-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            background: #fdfaf6;
+            font-size: 14px;
+            user-select: none;
+        }
+        .q-option:hover {
+            background: #f8f2e6;
+            border-color: #d4c4a8;
+        }
+        .q-option input {
+            display: none;
+        }
+        .q-option .radio-custom {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #b8a080;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .q-option .radio-custom::after {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.2s;
+        }
+        .q-option.selected {
+            border-color: var(--gold) !important;
+            background: #fdf8ef !important;
+        }
+        .q-option.selected .radio-custom {
+            border-color: var(--gold);
+            background: #fdf8ef;
+        }
+        .q-option.selected .radio-custom::after {
+            background: var(--gold);
+        }
+        .q-option.correct-show {
+            border-color: #4caf50 !important;
+            background: #e8f5e9 !important;
+        }
+        .q-option.wrong-show {
+            border-color: #f44336 !important;
+            background: #fdecea !important;
+        }
+        .q-option .option-letter {
+            font-weight: 700;
+            color: #6b3a2e;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 判断题 */
+        .judge-options {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .judge-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid #d4c4a8;
+            background: #fdfaf6;
+            transition: all 0.2s;
+            user-select: none;
+            letter-spacing: 1px;
+        }
+        .judge-btn:hover {
+            border-color: var(--gold);
+            background: #fdf8ef;
+        }
+        .judge-btn.selected {
+            border-color: var(--gold) !important;
+            background: #fdf8ef !important;
+            color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.08);
+        }
+        .judge-btn.correct-show {
+            border-color: #4caf50 !important;
+            background: #e8f5e9 !important;
+            color: #2e7d32;
+        }
+        .judge-btn.wrong-show {
+            border-color: #f44336 !important;
+            background: #fdecea !important;
+            color: #c62828;
+        }
+
+        /* 翻译textarea */
+        .trans-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px 14px;
+            border: 2px solid #d4c4a8;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fefcf7;
+            color: #3e2f1c;
+            font-family: var(--font-cn);
+            resize: vertical;
+            transition: all 0.3s;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+        .trans-textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.08);
+            background: #fffefb;
+        }
+
+        /* 计时器 */
+        .timer {
+            text-align: center;
+            font-size: 14px;
+            color: #7a6b55;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+        .timer span {
+            font-weight: 700;
+            color: var(--red-accent);
+            font-size: 16px;
+        }
+
+        /* 结果页 */
+        .result-summary {
+            background: linear-gradient(135deg, #fdf8f0, #fefcf7);
+            border: 2px solid #d4c4a8;
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .result-score {
+            font-size: 64px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            font-family: var(--font-cn);
+        }
+        .score-high {
+            color: #2e7d32;
+        }
+        .score-mid {
+            color: #e67e22;
+        }
+        .score-low {
+            color: #c62828;
+        }
+        .result-grade {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 4px;
+            letter-spacing: 2px;
+        }
+        .result-detail {
+            font-size: 13px;
+            color: #6b5a3e;
+            margin-top: 8px;
+        }
+        .result-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #5c4a2e;
+        }
+
+        .section-title {
+            font-family: var(--font-cn);
+            font-size: 18px;
+            font-weight: 700;
+            color: #3e2f1c;
+            margin: 20px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e8dcc8;
+            letter-spacing: 1px;
+        }
+
+        .assessment-card {
+            background: #fdf8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            border-left: 5px solid var(--gold);
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        .assessment-card strong {
+            color: #4a3720;
+        }
+        .assessment-card .highlight {
+            color: var(--red-accent);
+            font-weight: 700;
+        }
+
+        .keyword-matched {
+            background: #c8e6c9;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .keyword-missed {
+            background: #ffcdd2;
+            padding: 2px 5px;
+            border-radius: 3px;
+            text-decoration: line-through;
+            font-weight: 600;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px dashed #d4c4a8;
+            margin: 20px 0;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 22px;
+                letter-spacing: 1px;
+            }
+            .header {
+                padding: 20px 16px 16px;
+            }
+            .content {
+                padding: 16px 14px 20px;
+            }
+            .q-option {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            .judge-options {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .judge-btn {
+                min-width: auto;
+            }
+            .result-score {
+                font-size: 48px;
+            }
+            .result-meta {
+                gap: 12px;
+                flex-direction: column;
+                align-items: center;
+            }
+            .steps {
+                gap: 2px;
+            }
+            .step {
+                font-size: 11px;
+                padding: 6px 8px;
+                gap: 3px;
+            }
+            .step-num {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+            .step-connector {
+                width: 16px;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            .container {
+                border-width: 4px;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 顶部 -->
+        <div class="header">
+            <span class="icon">📜</span>
+            <h1>《本草纲目序》测试</h1>
+            <p class="subtitle">—— 王世贞 · 序文理解与鉴赏 ——</p>
+        </div>
+
+        <!-- 步骤指示器 -->
+        <div class="content" id="stepIndicator">
+            <div class="steps">
+                <span class="step active" id="step1ind">
+                    <span class="step-num">1</span> 填写信息
+                </span>
+                <span class="step-connector" id="conn1"></span>
+                <span class="step" id="step2ind">
+                    <span class="step-num">2</span> 作答试题
+                </span>
+                <span class="step-connector" id="conn2"></span>
+                <span class="step" id="step3ind">
+                    <span class="step-num">3</span> 查看成绩
+                </span>
+            </div>
+
+            <!-- 面板1：信息输入 -->
+            <div class="panel active" id="panelInfo">
+                <div class="info-card">
+                    📖 <strong>测试说明：</strong>本测试共<strong>100分</strong>，包含单选题（10题×4分）、判断题（10题×3分）、句子翻译题（2题×15分）。题目从题库中<strong>随机抽取</strong>，涵盖字词解释、句子翻译、背景介绍等内容。完成后自动批改并给出学习评估。
+                </div>
+                <div class="form-group">
+                    <label for="studentId">🔢 学号</label>
+                    <input type="text" id="studentId" placeholder="请输入您的学号" maxlength="30">
+                </div>
+                <div class="form-group">
+                    <label for="studentName">👤 姓名</label>
+                    <input type="text" id="studentName" placeholder="请输入您的姓名" maxlength="20">
+                </div>
+                <button class="btn btn-primary btn-block btn-lg" onclick="startExam()" style="margin-top:8px;">
+                    📝 开始随机生成试卷
+                </button>
+            </div>
+
+            <!-- 面板2：答题区 -->
+            <div class="panel" id="panelExam">
+                <div class="timer">⏱ 用时：<span id="timerDisplay">00:00</span></div>
+                <div id="examContent"></div>
+                <button class="btn btn-primary btn-block btn-lg" onclick="submitExam()" style="margin-top:20px;">
+                    ✅ 提交试卷
+                </button>
+            </div>
+
+            <!-- 面板3：结果 -->
+            <div class="panel" id="panelResult">
+                <div id="resultContent"></div>
+                <button class="btn btn-primary btn-block btn-lg" onclick="retakeExam()" style="margin-top:20px;">
+                    🔄 重新测试
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 题库 ====================
+        // 单选题库（15题，随机抽10题，每题4分）
+        const singleChoicePool = [{
+            id: 's1',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目序》的作者是谁？',
+            options: ['李时珍', '王世贞', '张仲景', '孙思邈'],
+            answer: 1 // 索引0开始，B
+        }, {
+            id: 's2',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》的作者是？',
+            options: ['王世贞', '李时珍', '华佗', '扁鹊'],
+            answer: 1
+        }, {
+            id: 's3',
+            category: 'word',
+            categoryLabel: '字词解释',
+            question: '"渔猎群书，搜罗百氏"中"渔猎"的含义是？',
+            options: ['捕鱼打猎', '广泛搜集', '深入研究', '随意翻阅'],
+            answer: 1
+        }, {
+            id: 's4',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》成书大约用了多少年？',
+            options: ['十年', '二十年', '二十八年', '三十八年'],
+            answer: 2
+        }, {
+            id: 's5',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '序中"如入金谷之园，种色夺目"用来形容什么？',
+            options: ['李时珍的私家园林', '《本草纲目》内容丰富多彩', '药材交易市场', '皇宫御花园'],
+            answer: 1
+        }, {
+            id: 's6',
+            category: 'word',
+            categoryLabel: '字词解释',
+            question: '"觇宝气辨明珠"中"觇"的意思是？',
+            options: ['购买', '观察', '触摸', '收藏'],
+            answer: 1
+        }, {
+            id: 's7',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》属于哪个朝代的作品？',
+            options: ['宋代', '元代', '明代', '清代'],
+            answer: 2
+        }, {
+            id: 's8',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '序中"凡二十八年而成书"主要说明什么？',
+            options: ['李时珍写书效率很高', '成书历时漫长，体现艰辛付出', '这本书内容很少', '李时珍中途曾放弃'],
+            answer: 1
+        }, {
+            id: 's9',
+            category: 'word',
+            categoryLabel: '字词解释',
+            question: '"望龙光知古剑"中的"龙光"指的是？',
+            options: ['龙的光芒', '宝剑的光气', '明亮的阳光', '灯烛之光'],
+            answer: 1
+        }, {
+            id: 's10',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '王世贞为《本草纲目》作序的主要原因是？',
+            options: ['他是李时珍的亲戚', '他欣赏该书的重要价值', '朝廷强制要求', '李时珍重金聘请'],
+            answer: 1
+        }, {
+            id: 's11',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》共有多少卷？',
+            options: ['36卷', '52卷', '60卷', '100卷'],
+            answer: 1
+        }, {
+            id: 's12',
+            category: 'word',
+            categoryLabel: '字词解释',
+            question: '"纪称"中的"纪"指的是什么？',
+            options: ['纪律规矩', '古书记载', '纪念意义', '纪元年代'],
+            answer: 1
+        }, {
+            id: 's13',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '李时珍是哪里人？',
+            options: ['苏州', '蕲州（今湖北蕲春）', '杭州', '扬州'],
+            answer: 1
+        }, {
+            id: 's14',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '序中"博而不繁，详而有要"形容《本草纲目》的什么特点？',
+            options: ['冗长啰嗦', '广博而不繁杂，详细而有要点', '过于简略', '晦涩难懂'],
+            answer: 1
+        }, {
+            id: 's15',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '王世贞在序中将《本草纲目》比作什么？',
+            options: ['普通书籍', '金谷之园', '农田庄稼', '街边药铺'],
+            answer: 1
+        }];
+
+        // 判断题库（15题，随机抽10题，每题3分）
+        const judgePool = [{
+            id: 'j1',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目序》是李时珍自己撰写的。',
+            answer: false,
+            explanation: '序由王世贞撰写，非李时珍自序。'
+        }, {
+            id: 'j2',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》是一部药学著作。',
+            answer: true,
+            explanation: '该书系统总结了明代以前的药学成就。'
+        }, {
+            id: 'j3',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '李时珍用了约二十八年完成《本草纲目》。',
+            answer: true,
+            explanation: '序中明确记载"凡二十八年而成书"。'
+        }, {
+            id: 'j4',
+            category: 'word',
+            categoryLabel: '字词解释',
+            question: '序中"渔猎群书"意思是李时珍喜欢钓鱼和打猎。',
+            answer: false,
+            explanation: '"渔猎"在此意为广泛搜集、博览群书。'
+        }, {
+            id: 'j5',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '王世贞在序中对《本草纲目》的评价非常高。',
+            answer: true,
+            explanation: '序中用"如入金谷之园，种色夺目"等语极力赞美。'
+        }, {
+            id: 'j6',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》成书于清代。',
+            answer: false,
+            explanation: '成书于明代，李时珍为明代医药学家。'
+        }, {
+            id: 'j7',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '"种色夺目"形容《本草纲目》内容单调枯燥。',
+            answer: false,
+            explanation: '该成语形容内容丰富多彩、令人目不暇接。'
+        }, {
+            id: 'j8',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '李时珍在编纂过程中参考了大量文献资料。',
+            answer: true,
+            explanation: '序中"渔猎群书，搜罗百氏"即说明其博采众长。'
+        }, {
+            id: 'j9',
+            category: 'word',
+            categoryLabel: '字词解释',
+            question: '"觇宝气辨明珠"比喻透过现象洞察本质。',
+            answer: true,
+            explanation: '通过观察宝气来辨识明珠，引申为洞察事物本质。'
+        }, {
+            id: 'j10',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '《本草纲目序》用华丽的辞藻赞美了该书的成就。',
+            answer: true,
+            explanation: '王世贞以文学手法高度评价了《本草纲目》。'
+        }, {
+            id: 'j11',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '李时珍出身医学世家，有深厚的家学渊源。',
+            answer: true,
+            explanation: '李时珍祖父和父亲都是医生，家学深厚。'
+        }, {
+            id: 'j12',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》只收录了植物类药物。',
+            answer: false,
+            explanation: '该书收录了植物、动物、矿物等多种药物，共1892种。'
+        }, {
+            id: 'j13',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '王世贞是明代著名的文学家。',
+            answer: true,
+            explanation: '王世贞为明代"后七子"领袖之一，文学成就卓著。'
+        }, {
+            id: 'j14',
+            category: 'background',
+            categoryLabel: '背景介绍',
+            question: '《本草纲目》在出版前就已经广为流传。',
+            answer: false,
+            explanation: '该书在李时珍去世后才得以出版，此前未广泛流传。'
+        }, {
+            id: 'j15',
+            category: 'translation',
+            categoryLabel: '句子理解',
+            question: '序中表达了王世贞对李时珍坚持不懈精神的赞赏。',
+            answer: true,
+            explanation: '序文充分肯定了李时珍二十八年如一日的坚持。'
+        }];
+
+        // 翻译题库（4题，随机抽2题，每题15分）
+        const translationPool = [{
+            id: 't1',
+            category: 'translation',
+            categoryLabel: '句子翻译',
+            question: '请翻译："渔猎群书，搜罗百氏"',
+            reference: '广泛搜集各种书籍，搜罗百家之说。',
+            keywords: ['广泛', '搜集', '群书', '搜罗', '百家', '博采', '各类', '书籍', '广博', '博览'],
+            fullScore: 15
+        }, {
+            id: 't2',
+            category: 'translation',
+            categoryLabel: '句子翻译',
+            question: '请翻译："如入金谷之园，种色夺目"',
+            reference: '如同进入金谷园中，各种色彩缤纷夺目。',
+            keywords: ['金谷园', '色彩', '缤纷', '夺目', '丰富', '绚丽', '目不暇接', '花园', '灿烂', '多彩'],
+            fullScore: 15
+        }, {
+            id: 't3',
+            category: 'translation',
+            categoryLabel: '句子翻译',
+            question: '请翻译："博而不繁，详而有要"',
+            reference: '内容广博却不繁杂，详细而又有要点。',
+            keywords: ['广博', '不繁', '详细', '有要', '要点', '不繁杂', '精简', '扼要', '丰富', '简明'],
+            fullScore: 15
+        }, {
+            id: 't4',
+            category: 'translation',
+            categoryLabel: '句子翻译',
+            question: '请翻译："凡二十八年而成书"',
+            reference: '总共用了二十八年才完成这部书。',
+            keywords: ['二十八年', '完成', '成书', '总共', '历时', '写成', '年', '书', '耗费', '编成'],
+            fullScore: 15
+        }];
+
+        // ==================== 全局状态 ====================
+        let studentId = '';
+        let studentName = '';
+        let selectedSingleChoice = []; // 抽中的单选题
+        let selectedJudge = []; // 抽中的判断题
+        let selectedTranslation = []; // 抽中的翻译题
+        let userAnswers = {}; // 用户答案 {questionId: answer}
+        let examStartTime = null;
+        let timerInterval = null;
+        let examSubmitted = false;
+
+        // ==================== 工具函数 ====================
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function randomPick(arr, n) {
+            return shuffle(arr).slice(0, n);
+        }
+
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+        }
+
+        // ==================== 步骤切换 ====================
+        function updateSteps(activeStep) {
+            const steps = ['step1ind', 'step2ind', 'step3ind'];
+            const conns = ['conn1', 'conn2'];
+            steps.forEach((s, i) => {
+                const el = document.getElementById(s);
+                el.classList.remove('active', 'done');
+                if (i < activeStep) el.classList.add('done');
+                if (i === activeStep) el.classList.add('active');
+            });
+            conns.forEach((c, i) => {
+                const el = document.getElementById(c);
+                el.classList.toggle('done', i < activeStep);
+            });
+        }
+
+        function showPanel(panelId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(panelId).classList.add('active');
+        }
+
+        // ==================== 开始考试 ====================
+        function startExam() {
+            studentId = document.getElementById('studentId').value.trim();
+            studentName = document.getElementById('studentName').value.trim();
+
+            if (!studentId) {
+                alert('请输入学号！');
+                document.getElementById('studentId').focus();
+                return;
+            }
+            if (!studentName) {
+                alert('请输入姓名！');
+                document.getElementById('studentName').focus();
+                return;
+            }
+
+            // 随机抽题
+            selectedSingleChoice = randomPick(singleChoicePool, 10);
+            selectedJudge = randomPick(judgePool, 10);
+            selectedTranslation = randomPick(translationPool, 2);
+            userAnswers = {};
+            examSubmitted = false;
+            examStartTime = Date.now();
+
+            // 更新步骤
+            updateSteps(1);
+            showPanel('panelExam');
+
+            // 渲染试题
+            renderExam();
+
+            // 启动计时器
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - examStartTime) / 1000);
+                document.getElementById('timerDisplay').textContent = formatTime(elapsed);
+            }, 500);
+
+            // 滚动到顶部
+            document.getElementById('panelExam').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ==================== 渲染试题 ====================
+        function renderExam() {
+            let html = '';
+            let qIndex = 0;
+
+            // 单选题
+            html += '<div class="section-title">📋 一、单项选择题（每题4分，共40分）</div>';
+            selectedSingleChoice.forEach((q, i) => {
+                qIndex++;
+                const catClass = q.category === 'word' ? 'badge-word' : q.category === 'translation' ?
+                    'badge-trans' : 'badge-bg';
+                html += `
+                <div class="question-block" id="q-block-${q.id}">
+                    <div class="q-header">
+                        <span class="q-num">${qIndex}</span>
+                        <div class="q-info">
+                            <span class="q-type-badge ${catClass}">${q.categoryLabel}</span>
+                            <div class="q-text">${q.question}</div>
+                        </div>
+                    </div>
+                    <div class="q-options">
+                        ${q.options.map((opt, oi) => {
+                            const letter = String.fromCharCode(65 + oi);
+                            return `
+                                <label class="q-option" id="opt-${q.id}-${oi}" onclick="selectSingle('${q.id}', ${oi})">
+                                    <span class="radio-custom"></span>
+                                    <span class="option-letter">${letter}.</span>
+                                    <span>${opt}</span>
+                                </label>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+            });
+
+            // 判断题
+            html += '<div class="section-title">✅ 二、判断题（每题3分，共30分）</div>';
+            selectedJudge.forEach((q, i) => {
+                qIndex++;
+                const catClass = q.category === 'word' ? 'badge-word' : q.category === 'translation' ?
+                    'badge-trans' : 'badge-bg';
+                html += `
+                <div class="question-block" id="q-block-${q.id}">
+                    <div class="q-header">
+                        <span class="q-num">${qIndex}</span>
+                        <div class="q-info">
+                            <span class="q-type-badge ${catClass}">${q.categoryLabel}</span>
+                            <div class="q-text">${q.question}</div>
+                        </div>
+                    </div>
+                    <div class="judge-options">
+                        <div class="judge-btn" id="judge-${q.id}-true" onclick="selectJudge('${q.id}', true)">✔ 正确</div>
+                        <div class="judge-btn" id="judge-${q.id}-false" onclick="selectJudge('${q.id}', false)">✘ 错误</div>
+                    </div>
+                </div>`;
+            });
+
+            // 翻译题
+            html += '<div class="section-title">✍️ 三、句子翻译题（每题15分，共30分）</div>';
+            selectedTranslation.forEach((q, i) => {
+                qIndex++;
+                html += `
+                <div class="question-block" id="q-block-${q.id}">
+                    <div class="q-header">
+                        <span class="q-num">${qIndex}</span>
+                        <div class="q-info">
+                            <span class="q-type-badge badge-trans">${q.categoryLabel}</span>
+                            <div class="q-text">${q.question}</div>
+                        </div>
+                    </div>
+                    <textarea class="trans-textarea" id="trans-${q.id}" placeholder="请输入您的翻译..."></textarea>
+                </div>`;
+            });
+
+            document.getElementById('examContent').innerHTML = html;
+        }
+
+        // ==================== 选择答案 ====================
+        function selectSingle(questionId, optionIndex) {
+            if (examSubmitted) return;
+            userAnswers[questionId] = optionIndex;
+            // 更新UI
+            const options = document.querySelectorAll(`[id^="opt-${questionId}-"]`);
+            options.forEach(o => o.classList.remove('selected'));
+            const selectedOpt = document.getElementById(`opt-${questionId}-${optionIndex}`);
+            if (selectedOpt) selectedOpt.classList.add('selected');
+        }
+
+        function selectJudge(questionId, value) {
+            if (examSubmitted) return;
+            userAnswers[questionId] = value;
+            // 更新UI
+            const trueBtn = document.getElementById(`judge-${questionId}-true`);
+            const falseBtn = document.getElementById(`judge-${questionId}-false`);
+            if (trueBtn) trueBtn.classList.remove('selected');
+            if (falseBtn) falseBtn.classList.remove('selected');
+            if (value === true && trueBtn) trueBtn.classList.add('selected');
+            if (value === false && falseBtn) falseBtn.classList.add('selected');
+        }
+
+        // ==================== 提交试卷 ====================
+        function submitExam() {
+            if (examSubmitted) return;
+
+            // 检查是否全部作答
+            const totalQuestions = selectedSingleChoice.length + selectedJudge.length + selectedTranslation.length;
+            let answeredCount = 0;
+
+            selectedSingleChoice.forEach(q => {
+                if (userAnswers[q.id] !== undefined) answeredCount++;
+            });
+            selectedJudge.forEach(q => {
+                if (userAnswers[q.id] !== undefined) answeredCount++;
+            });
+            selectedTranslation.forEach(q => {
+                const val = document.getElementById(`trans-${q.id}`)?.value?.trim();
+                if (val && val.length > 0) {
+                    userAnswers[q.id] = val;
+                    answeredCount++;
+                }
+            });
+
+            if (answeredCount < totalQuestions) {
+                const unAnswered = totalQuestions - answeredCount;
+                if (!confirm(`还有 ${unAnswered} 道题未作答，确定提交吗？\n未作答的题目将判为0分。`)) {
+                    return;
+                }
+            }
+
+            // 收集翻译题答案
+            selectedTranslation.forEach(q => {
+                const val = document.getElementById(`trans-${q.id}`)?.value?.trim();
+                userAnswers[q.id] = val || '';
+            });
+
+            examSubmitted = true;
+            if (timerInterval) clearInterval(timerInterval);
+            const elapsed = Math.floor((Date.now() - examStartTime) / 1000);
+
+            // 批改
+            const result = gradeExam(elapsed);
+
+            // 更新步骤
+            updateSteps(2);
+            showPanel('panelResult');
+
+            // 渲染结果
+            renderResult(result, elapsed);
+
+            // 滚动到顶部
+            document.getElementById('panelResult').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ==================== 批改 ====================
+        function gradeExam(elapsedSeconds) {
+            let totalScore = 0;
+            let singleCorrect = 0;
+            let singleTotal = selectedSingleChoice.length;
+            let judgeCorrect = 0;
+            let judgeTotal = selectedJudge.length;
+            let transScores = [];
+            const details = {
+                singleChoice: [],
+                judge: [],
+                translation: [],
+                categoryScores: { word: { earned: 0, total: 0 }, translation: { earned: 0, total: 0 },
+                    background: { earned: 0, total: 0 } }
+            };
+
+            // 批改单选题（每题4分）
+            selectedSingleChoice.forEach(q => {
+                const userAns = userAnswers[q.id];
+                const correct = (userAns === q.answer);
+                const score = correct ? 4 : 0;
+                totalScore += score;
+                if (correct) singleCorrect++;
+                details.singleChoice.push({
+                    ...q,
+                    userAnswer: userAns,
+                    correct,
+                    score,
+                    userAnswerLabel: userAns !== undefined ? String.fromCharCode(65 + userAns) : '未作答',
+                    correctAnswerLabel: String.fromCharCode(65 + q.answer)
+                });
+                // 分类统计
+                if (details.categoryScores[q.category]) {
+                    details.categoryScores[q.category].earned += score;
+                    details.categoryScores[q.category].total += 4;
+                }
+            });
+
+            // 批改判断题（每题3分）
+            selectedJudge.forEach(q => {
+                const userAns = userAnswers[q.id];
+                const correct = (userAns === q.answer);
+                const score = correct ? 3 : 0;
+                totalScore += score;
+                if (correct) judgeCorrect++;
+                details.judge.push({
+                    ...q,
+                    userAnswer: userAns,
+                    correct,
+                    score,
+                    userAnswerLabel: userAns === true ? '正确' : userAns === false ? '错误' : '未作答',
+                    correctAnswerLabel: q.answer ? '正确' : '错误'
+                });
+                if (details.categoryScores[q.category]) {
+                    details.categoryScores[q.category].earned += score;
+                    details.categoryScores[q.category].total += 3;
+                }
+            });
+
+            // 批改翻译题（每题15分，关键词匹配）
+            selectedTranslation.forEach(q => {
+                const userAns = userAnswers[q.id] || '';
+                const { score, matched, missed, total: kwTotal } = scoreTranslation(q, userAns);
+                totalScore += score;
+                transScores.push(score);
+                details.translation.push({
+                    ...q,
+                    userAnswer: userAns,
+                    score,
+                    maxScore: q.fullScore,
+                    matchedKeywords: matched,
+                    missedKeywords: missed,
+                    kwTotal
+                });
+                if (details.categoryScores[q.category]) {
+                    details.categoryScores[q.category].earned += score;
+                    details.categoryScores[q.category].total += q.fullScore;
+                }
+            });
+
+            return {
+                totalScore: Math.round(totalScore),
+                singleCorrect,
+                singleTotal,
+                judgeCorrect,
+                judgeTotal,
+                transScores,
+                details,
+                elapsedSeconds
+            };
+        }
+
+        function scoreTranslation(q, userAnswer) {
+            if (!userAnswer || userAnswer.trim().length === 0) {
+                return { score: 0, matched: [], missed: q.keywords, total: q.keywords.length };
+            }
+            const lowerUser = userAnswer.toLowerCase();
+            const matched = [];
+            const missed = [];
+            q.keywords.forEach(kw => {
+                if (lowerUser.includes(kw.toLowerCase())) {
+                    matched.push(kw);
+                } else {
+                    missed.push(kw);
+                }
+            });
+            const ratio = matched.length / q.keywords.length;
+            let score;
+            if (ratio >= 0.8) score = q.fullScore;
+            else if (ratio >= 0.6) score = Math.round(q.fullScore * 0.85);
+            else if (ratio >= 0.4) score = Math.round(q.fullScore * 0.65);
+            else if (ratio >= 0.2) score = Math.round(q.fullScore * 0.4);
+            else if (ratio > 0) score = Math.round(q.fullScore * 0.2);
+            else score = 0;
+            // 如果用户答案与参考答案非常接近（长度足够且匹配率高），给满分
+            if (userAnswer.length >= 5 && ratio >= 0.7 && matched.length >= 5) {
+                score = q.fullScore;
+            }
+            return { score: Math.min(score, q.fullScore), matched, missed, total: q.keywords.length };
+        }
+
+        // ==================== 渲染结果 ====================
+        function renderResult(result, elapsedSeconds) {
+            const { totalScore, singleCorrect, singleTotal, judgeCorrect, judgeTotal, transScores, details } = result;
+
+            // 等级评定
+            let grade, gradeClass, gradeColor;
+            if (totalScore >= 90) { grade = '优秀 🌟';
+                gradeClass = 'score-high';
+                gradeColor = '#2e7d32'; } else if (totalScore >= 80) { grade = '良好 👍';
+                gradeClass = 'score-high';
+                gradeColor = '#388e3c'; } else if (totalScore >= 70) { grade = '中等 📖';
+                gradeClass = 'score-mid';
+                gradeColor = '#e67e22'; } else if (totalScore >= 60) { grade = '及格 ⚠️';
+                gradeClass = 'score-mid';
+                gradeColor = '#ef6c00'; } else { grade = '需努力 💪';
+                gradeClass = 'score-low';
+                gradeColor = '#c62828'; }
+
+            let html = '';
+            html += `
+            <div class="result-summary">
+                <div style="font-size:14px;color:#6b5a3e;margin-bottom:4px;">📜 测试成绩</div>
+                <div class="result-score ${gradeClass}" style="color:${gradeColor}">${totalScore}<span style="font-size:28px;"> / 100</span></div>
+                <div class="result-grade" style="color:${gradeColor}">${grade}</div>
+                <div class="result-meta">
+                    <span>👤 ${studentName}（${studentId}）</span>
+                    <span>⏱ 用时 ${formatTime(elapsedSeconds)}</span>
+                    <span>📋 单选 ${singleCorrect}/${singleTotal}</span>
+                    <span>✅ 判断 ${judgeCorrect}/${judgeTotal}</span>
+                    <span>✍️ 翻译 ${transScores.join('分、')}分</span>
+                </div>
+            </div>`;
+
+            // 逐题详情
+            html += '<div class="section-title">📝 逐题批改详情</div>';
+
+            // 单选题详情
+            html += '<h4 style="margin-top:12px;color:#4a3720;">一、单项选择题</h4>';
+            details.singleChoice.forEach((q, i) => {
+                const icon = q.correct ? '✅' : '❌';
+                const statusClass = q.correct ? 'correct-flash' : 'wrong-flash';
+                html += `
+                <div class="question-block ${statusClass}" style="padding:14px 16px;">
+                    <strong>${icon} 第${i+1}题（${q.score}/4分）</strong>
+                    <span class="q-type-badge ${q.category === 'word' ? 'badge-word' : q.category === 'translation' ? 'badge-trans' : 'badge-bg'}" style="margin-left:8px;">${q.categoryLabel}</span>
+                    <div style="margin-top:4px;">${q.question}</div>
+                    <div style="font-size:13px;margin-top:4px;">
+                        你的答案：<span style="color:${q.correct ? '#2e7d32' : '#c62828'};font-weight:700;">${q.userAnswerLabel}</span>
+                        &nbsp;|&nbsp; 正确答案：<span style="color:#2e7d32;font-weight:700;">${q.correctAnswerLabel}</span>
+                    </div>
+                </div>`;
+            });
+
+            // 判断题详情
+            html += '<h4 style="margin-top:16px;color:#4a3720;">二、判断题</h4>';
+            details.judge.forEach((q, i) => {
+                const icon = q.correct ? '✅' : '❌';
+                const statusClass = q.correct ? 'correct-flash' : 'wrong-flash';
+                html += `
+                <div class="question-block ${statusClass}" style="padding:14px 16px;">
+                    <strong>${icon} 第${singleTotal + i + 1}题（${q.score}/3分）</strong>
+                    <span class="q-type-badge ${q.category === 'word' ? 'badge-word' : q.category === 'translation' ? 'badge-trans' : 'badge-bg'}" style="margin-left:8px;">${q.categoryLabel}</span>
+                    <div style="margin-top:4px;">${q.question}</div>
+                    <div style="font-size:13px;margin-top:4px;">
+                        你的答案：<span style="color:${q.correct ? '#2e7d32' : '#c62828'};font-weight:700;">${q.userAnswerLabel}</span>
+                        &nbsp;|&nbsp; 正确答案：<span style="color:#2e7d32;font-weight:700;">${q.correctAnswerLabel}</span>
+                    </div>
+                    ${!q.correct ? `<div style="font-size:12px;color:#6b5a3e;margin-top:2px;">💡 ${q.explanation}</div>` : ''}
+                </div>`;
+            });
+
+            // 翻译题详情
+            html += '<h4 style="margin-top:16px;color:#4a3720;">三、句子翻译题</h4>';
+            details.translation.forEach((q, i) => {
+                const scorePercent = Math.round((q.score / q.maxScore) * 100);
+                const icon = scorePercent >= 80 ? '✅' : scorePercent >= 40 ? '⚠️' : '❌';
+                const statusClass = scorePercent >= 60 ? 'correct-flash' : 'wrong-flash';
+                html += `
+                <div class="question-block ${statusClass}" style="padding:14px 16px;">
+                    <strong>${icon} 第${singleTotal + judgeTotal + i + 1}题（${q.score}/${q.maxScore}分）</strong>
+                    <span class="q-type-badge badge-trans" style="margin-left:8px;">句子翻译</span>
+                    <div style="margin-top:4px;">${q.question}</div>
+                    <div style="font-size:13px;margin-top:6px;">
+                        <div>📝 <strong>你的翻译：</strong>${q.userAnswer || '<em style="color:#999;">未作答</em>'}</div>
+                        <div style="margin-top:3px;">📖 <strong>参考翻译：</strong>${q.reference}</div>
+                        <div style="margin-top:3px;">
+                            🏷 <strong>关键词匹配：</strong>
+                            ${q.matchedKeywords.map(k => `<span class="keyword-matched">✓${k}</span>`).join(' ')}
+                            ${q.missedKeywords.map(k => `<span class="keyword-missed">✗${k}</span>`).join(' ')}
+                            <span style="font-size:11px;color:#6b5a3e;">（匹配${q.matchedKeywords.length}/${q.kwTotal}个关键词）</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            // 学习评估
+            html += '<div class="section-title">📊 学习效果评估</div>';
+            html += generateAssessment(result, details);
+
+            document.getElementById('resultContent').innerHTML = html;
+        }
+
+        function generateAssessment(result, details) {
+            const { totalScore } = result;
+            let assessment = '';
+            let suggestions = [];
+
+            // 总体评价
+            if (totalScore >= 90) {
+                assessment =
+                    '<p>🎉 <strong>优秀！</strong>您对《本草纲目序》的掌握非常出色，字词理解、句子翻译和背景知识都十分扎实，展现了深厚的文言文功底和对这部经典药学著作序言的深刻理解。</p>';
+            } else if (totalScore >= 80) {
+                assessment =
+                    '<p>👍 <strong>良好！</strong>您基本掌握了《本草纲目序》的核心内容，对序文的背景、字词和句子有较好的理解，但仍有少数知识点需要巩固。</p>';
+            } else if (totalScore >= 70) {
+                assessment =
+                    '<p>📖 <strong>中等水平。</strong>您对《本草纲目序》有一定了解，但在部分字词解释和句子翻译方面还存在不足，建议加强文言文基础训练。</p>';
+            } else if (totalScore >= 60) {
+                assessment =
+                    '<p>⚠️ <strong>基本及格。</strong>您对序文的理解还不够深入，多处知识点掌握不牢，需要重点复习《本草纲目序》的字词、背景和翻译要点。</p>';
+            } else {
+                assessment =
+                    '<p>💪 <strong>需要努力。</strong>您对《本草纲目序》的掌握较为薄弱，建议从头系统学习序文内容，注重字词积累和文言翻译练习。</p>';
+            }
+
+            // 分类分析
+            const catNames = { word: '字词解释', translation: '句子翻译/理解', background: '背景介绍' };
+            const catAnalysis = [];
+            for (const [cat, data] of Object.entries(details.categoryScores)) {
+                if (data.total > 0) {
+                    const pct = Math.round((data.earned / data.total) * 100);
+                    let level = pct >= 80 ? '掌握良好' : pct >= 60 ? '基本掌握' : pct >= 40 ? '较为薄弱' : '亟待加强';
+                    catAnalysis.push(
+                        `<strong>${catNames[cat] || cat}：</strong>得分 ${data.earned}/${data.total}（${pct}%），<span class="highlight">${level}</span>`
+                        );
+                    if (pct < 60) {
+                        if (cat === 'word') suggestions.push('📌 建议加强文言文字词积累，重点复习"渔猎""觇""龙光""纪"等关键词汇的含义。');
+                        if (cat === 'translation') suggestions.push(
+                            '📌 建议多练习文言句子翻译，注意把握"博而不繁，详而有要"等经典句式的翻译方法。');
+                        if (cat === 'background') suggestions.push('📌 建议补充《本草纲目》的背景知识，包括作者李时珍、序作者王世贞、成书年代等基本信息。');
+                    }
+                }
+            }
+
+            // 翻译题特别分析
+            const transTotal = details.translation.reduce((s, t) => s + t.score, 0);
+            const transMax = details.translation.reduce((s, t) => s + t.maxScore, 0);
+            if (transMax > 0 && transTotal / transMax < 0.5) {
+                suggestions.push('📌 翻译题得分较低，建议对照原文逐句理解，重点关注关键实词和虚词的翻译技巧。');
+            }
+
+            if (suggestions.length === 0 && totalScore >= 80) {
+                suggestions.push('🌟 您在各知识点模块的表现均衡且优秀，继续保持！');
+            }
+            if (suggestions.length === 0 && totalScore < 80) {
+                suggestions.push('📌 建议全面复习《本草纲目序》的相关知识，查漏补缺。');
+            }
+
+            return `
+            <div class="assessment-card">
+                ${assessment}
+                <hr class="divider">
+                <p><strong>📋 分类掌握情况：</strong></p>
+                ${catAnalysis.map(c => `<p style="margin:4px 0;">• ${c}</p>`).join('')}
+                <hr class="divider">
+                <p><strong>💡 针对性建议：</strong></p>
+                ${suggestions.map(s => `<p style="margin:4px 0;">${s}</p>`).join('')}
+            </div>`;
+        }
+
+        // ==================== 重新测试 ====================
+        function retakeExam() {
+            if (timerInterval) clearInterval(timerInterval);
+            userAnswers = {};
+            selectedSingleChoice = [];
+            selectedJudge = [];
+            selectedTranslation = [];
+            examSubmitted = false;
+            examStartTime = null;
+            document.getElementById('timerDisplay').textContent = '00:00';
+            document.getElementById('examContent').innerHTML = '';
+            document.getElementById('resultContent').innerHTML = '';
+            updateSteps(0);
+            showPanel('panelInfo');
+            document.getElementById('panelInfo').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ==================== 初始化 ====================
+        updateSteps(0);
+        showPanel('panelInfo');
+    </script>
+</body>
+</html>

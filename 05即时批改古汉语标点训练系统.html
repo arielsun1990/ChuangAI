@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>本草纲目序 · 句读练习</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5efe3;
+            font-family: 'Segoe UI', '华文楷书', 'Noto Serif SC', '宋体', serif;
+            margin: 0;
+            padding: 20px;
+            color: #2c2418;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fffef7;
+            box-shadow: 0 20px 35px rgba(80, 55, 30, 0.12);
+            border-radius: 36px;
+            padding: 24px 28px;
+            border: 1px solid #e9dbc9;
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 500;
+            margin: 0 0 0.25rem 0;
+            color: #5a3e2b;
+            letter-spacing: 2px;
+            border-left: 6px solid #b87333;
+            padding-left: 20px;
+        }
+
+        .sub {
+            color: #9b7b5c;
+            margin-bottom: 24px;
+            font-size: 1rem;
+            border-bottom: 1px dashed #e2d4c4;
+            padding-bottom: 12px;
+            padding-left: 26px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            background: #faf4ea;
+            padding: 12px 24px;
+            border-radius: 60px;
+        }
+
+        .score-area {
+            background: #2c3e2f;
+            color: #f9eec1;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2), 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .score-stats {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+        }
+
+        .score-stats span {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-right: 2px;
+            color: #ffd966;
+        }
+
+        .score-detail {
+            font-size: 0.95rem;
+            color: #e9d9af;
+        }
+
+        .feedback-tag {
+            font-size: 1rem;
+            background: #3a2c1f;
+            padding: 5px 14px;
+            border-radius: 30px;
+            color: #ffecb3;
+            font-weight: normal;
+        }
+
+        button {
+            background: #b87333;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background: #9b5e2c;
+            transform: scale(0.96);
+        }
+
+        .btn-outline {
+            background: #e9dbc9;
+            color: #5a3e2b;
+            border: 1px solid #ccb690;
+        }
+
+        .btn-outline:hover {
+            background: #ddceb6;
+        }
+
+        .correct-view-btn {
+            background: #5f7e5a;
+        }
+
+        .correct-view-btn:hover {
+            background: #476241;
+        }
+
+        .text-display {
+            background: #fefcf6;
+            border: 1px solid #e7dac8;
+            border-radius: 28px;
+            padding: 28px 28px;
+            max-height: 68vh;
+            overflow-y: auto;
+            font-size: 1.3rem;      /* 整体文本字号调大 */
+            line-height: 2.4;
+            box-shadow: inset 0 0 0 1px #fff8ea, 0 6px 14px rgba(0,0,0,0.02);
+        }
+
+        .char-unit {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 6px 10px 0;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 4px 6px 4px 10px;
+            transition: all 0.05s;
+            border: 1px solid #f0e4d4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .char-han {
+            font-size: 1.5rem;      /* 汉字明显增大 */
+            font-weight: 500;
+            padding: 0 4px 0 0;
+            display: inline-block;
+            font-family: 'Noto Serif SC', '华文楷书', '宋体', serif;
+            color: #2e241b;
+        }
+
+        .punct-input {
+            font-size: 1rem;
+            width: 58px;
+            margin-left: 6px;
+            padding: 6px 4px;
+            text-align: center;
+            border-radius: 32px;
+            border: 1px solid #d4bfa0;
+            background: #fffcf5;
+            font-family: 'Courier New', monospace;
+            transition: 0.1s;
+            outline: none;
+        }
+
+        .punct-input.correct {
+            border-color: #2e7d32;
+            background-color: #e8f5e9;
+        }
+        .punct-input.incorrect {
+            border-color: #c62828;
+            background-color: #ffebee;
+        }
+
+        .feedback-icon {
+            display: inline-block;
+            width: 28px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 6px;
+            opacity: 0;
+            transition: opacity 0.1s;
+            pointer-events: none;
+        }
+        .feedback-icon.show {
+            opacity: 1;
+        }
+
+        .paragraph-break {
+            display: block;
+            margin-top: 0.8rem;
+            margin-bottom: 0.8rem;
+            width: 100%;
+            clear: both;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 20, 12, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #fef7e8;
+            max-width: 920px;
+            width: 90%;
+            max-height: 85%;
+            border-radius: 36px;
+            padding: 20px 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            border: 1px solid #dbbd94;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #875e36;
+            border-left: 5px solid #b87333;
+            padding-left: 18px;
+            font-size: 1.4rem;
+        }
+
+        .correct-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            font-family: 'Courier New', '华文楷书', monospace;
+            background: #fff6ea;
+            padding: 20px;
+            border-radius: 24px;
+            color: #2b2a24;
+        }
+
+        .close-modal {
+            float: right;
+            background: #c08d5c;
+            border: none;
+            margin-top: 0;
+            font-size: 1rem;
+        }
+
+        .info-tip {
+            font-size: 0.85rem;
+            margin-left: 12px;
+            color: #b2916e;
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #bbaa8a;
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                padding: 16px;
+            }
+            .char-unit {
+                margin-right: 4px;
+                padding: 2px 4px 2px 8px;
+            }
+            .punct-input {
+                width: 50px;
+                font-size: 0.9rem;
+                padding: 4px 2px;
+            }
+            .char-han {
+                font-size: 1.2rem;
+            }
+            .text-display {
+                padding: 16px;
+                line-height: 2.2;
+                font-size: 1.1rem;
+            }
+            .feedback-icon {
+                width: 22px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📜 《本草纲目序》 · 句读练习</h1>
+    <div class="sub">王世贞 撰</div>
+
+    <div class="toolbar">
+        <div class="score-area">
+            <div class="score-stats">
+                📖 正确率 · <span id="scorePercent">0</span>%
+                <span class="score-detail" id="scoreDetail">(0 / 0)</span>
+            </div>
+            <div id="feedbackMessage" class="feedback-tag">—</div>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button id="gradeBtn">✍️ 评 分</button>
+            <button id="showCorrectBtn" class="correct-view-btn">📖 显示全文正确标点</button>
+            <button id="resetAllBtn" class="btn-outline">🔄 清空所有标点</button>
+        </div>
+    </div>
+
+    <div class="text-display" id="textDisplayArea">
+        <div style="text-align: center; color: #aa8e6e;">⚡ 加载文本中，请稍候...</div>
+    </div>
+    <div class="info-tip">
+        💡 提示：在每个汉字后的输入框中自行添加标点。中英文标点等价（如“。”与“.”）。<br>
+        📌 每输入一个标点，右侧会即时显示✅正确或❌错误反馈。点击「评分」会高亮所有正确/错误标点，并给出综合评价。
+    </div>
+    <footer>依据王世贞《本草纲目序》原文 · 书名号《》已计入标点 · 仅对标点位置计分</footer>
+</div>
+
+<!-- 正确标点模态框 -->
+<div id="correctModal" class="modal">
+    <div class="modal-content">
+        <button class="close-modal" id="closeModalBtn">✖ 关闭</button>
+        <h3>📘 《本草纲目序》 · 原文正确标点（王世贞撰）</h3>
+        <div id="fullCorrectTextDisplay" class="correct-text"></div>
+    </div>
+</div>
+
+<script>
+    // ---------- 原始正确标点全文（已按要求修改标点：望龍光知古劍，覘寶氣辨明珠）----------
+    const FULL_CORRECT_TEXT = `紀稱：望龍光知古劍，覘寶氣辨明珠。故萍實商羊，非天明莫洞。厥後博物稱華，辨字稱康，析寶玉稱倚頓，亦僅僅晨星耳。
+
+楚蘄陽李君東璧，一日過予弇山園謁予，留飲數日。予窥其人，睟然貌也，癯然身也，津津然譚議也，真北斗以南一人。解其裝，無長物，有《本草綱目》數十卷。謂予曰："時珍，荊楚鄙人也，幼多羸疾，質成鈍椎，長耽典籍，若啖蔗飴。遂漁獵羣書，搜羅百氏，凡子、史、經、傳、聲韻、農圃、醫卜、星相、樂府諸家，稍有得處，輒著有數言。古有《本草》一書，自炎皇及漢、梁、唐、宋，下迨國朝，註解羣氏舊矣。第其中舛謬差譌遺漏，不可枚數。迺敢奮編摩之志，僭纂述之權。歲曆三十稔，書攷八百餘家，稿凡三易。複者芟之，闕者緝之，訛者繩之。舊本一千五百一十八種，今增藥三百七十四種，分為一十六部，著成五十二卷。雖非集成，亦粗大備，僭名曰《本草綱目》。願乞一言，以託不朽。"
+
+予開卷細玩，每藥標正名為綱，附釋名為目，正始也；次以集解、辯疑、正誤，詳其土產形狀也；次以氣味、主治、附方，著其體用也。上自墳典，下及傳奇，凡有相關，靡不備采。如入金穀之園，種色奪目；如登龍君之宮，寶藏悉陳；如對冰壺玉鑑，毛髮可指數也。博而不繁，詳而有要，綜核究竟，直窺淵海。茲豈僅以醫書覯哉？實性理之精微，格物之通典，帝王之秘籙，臣民之重寶也。李君用心嘉惠何勤哉！噫！碔玉莫剖，朱紫相傾，弊也久矣。故辯專車之骨，必竢魯儒；博支機之石，必訪賣卜。予方著《弇州卮言》，恚博古如《丹鉛卮言》後乏人也，何幸覩茲集哉！茲集也，藏之深山石室無當，盍鍥之以共天下後世味《太玄》如子雲者。
+
+時萬曆歲庚寅春上元日，弇州山人鳳洲王世貞拜撰。`;
+
+    // 评分标点集合（包含书名号）
+    const SCORING_PUNCTS = new Set(['。', '，', '；', '：', '？', '！', '、', '《', '》']);
+    
+    function normalizePunctuation(char) {
+        if (!char) return '';
+        const map = {
+            '.': '。',
+            ',': '，',
+            ';': '；',
+            ':': '：',
+            '?': '？',
+            '!': '！',
+        };
+        return map[char] || char;
+    }
+
+    function isPunctMatch(expected, userRaw) {
+        if (expected === null) return false;
+        if (!userRaw) return false;
+        const trimmed = userRaw.trim();
+        if (trimmed.length === 0) return false;
+        const firstChar = trimmed[0];
+        const normalizedUser = normalizePunctuation(firstChar);
+        return normalizedUser === expected;
+    }
+
+    function isPunctuation(ch) {
+        const punctRegex = /[。，；：？！、《》．,;:?!.·…—～]/;
+        return punctRegex.test(ch);
+    }
+    
+    function isDisplayChar(ch) {
+        if (ch === ' ' || ch === '\n' || ch === '\t') return false;
+        if (/[A-Za-z0-9]/.test(ch)) return true;
+        return /[\u4e00-\u9fff\u3400-\u4dbf\uF900-\uFAFF]/.test(ch);
+    }
+    
+    // 解析全文，生成渲染序列和标点位置
+    function parseSequences(fullText) {
+        const renderItems = [];
+        const punctPositions = [];
+        let i = 0;
+        const len = fullText.length;
+        let renderIdx = 0;
+        while (i < len) {
+            const ch = fullText[i];
+            if (ch === '\n') {
+                renderItems.push({ displayChar: '\n', expectedPunct: null, isLineBreak: true, renderIndex: renderIdx++ });
+                i++;
+                continue;
+            }
+            if (ch === ' ' || ch === '\t') {
+                renderItems.push({ displayChar: ' ', expectedPunct: null, isSpace: true, renderIndex: renderIdx++ });
+                i++;
+                continue;
+            }
+            if (isDisplayChar(ch) && !isPunctuation(ch)) {
+                let nextIdx = i + 1;
+                let punctSeq = [];
+                while (nextIdx < len && isPunctuation(fullText[nextIdx])) {
+                    punctSeq.push(fullText[nextIdx]);
+                    nextIdx++;
+                }
+                let expected = null;
+                for (let p of punctSeq) {
+                    if (SCORING_PUNCTS.has(p)) {
+                        expected = p;
+                        break;
+                    }
+                }
+                renderItems.push({
+                    displayChar: ch,
+                    expectedPunct: expected,
+                    isLineBreak: false,
+                    isSpace: false,
+                    renderIndex: renderIdx
+                });
+                if (expected !== null) {
+                    punctPositions.push({ renderIndex: renderIdx, expectedPunct: expected });
+                }
+                renderIdx++;
+                i = nextIdx;
+            } else {
+                i++;
+            }
+        }
+        return { renderItems, punctPositions };
+    }
+    
+    let renderItems = [];
+    let punctPositions = [];
+    let uiMapping = [];           // { renderIndex, inputElem, expected, feedbackSpan }
+    
+    // 显示即时反馈（正确/错误）
+    function showInstantFeedback(feedbackSpan, isCorrect) {
+        if (!feedbackSpan) return;
+        feedbackSpan.textContent = isCorrect ? '✓' : '✗';
+        feedbackSpan.style.color = isCorrect ? '#2e7d32' : '#c62828';
+        feedbackSpan.classList.add('show');
+        // 2秒后自动隐藏
+        clearTimeout(feedbackSpan._timeout);
+        feedbackSpan._timeout = setTimeout(() => {
+            feedbackSpan.classList.remove('show');
+        }, 1500);
+    }
+    
+    // 绑定单个输入框的实时校验
+    function bindInputValidation(inputElem, expected, feedbackSpan) {
+        const handler = () => {
+            const userVal = inputElem.value;
+            let isCorrect = false;
+            if (expected !== null) {
+                isCorrect = isPunctMatch(expected, userVal);
+                showInstantFeedback(feedbackSpan, isCorrect);
+            } else {
+                // 此位置没有期望标点（不参与评分），但用户输入了任何东西都显示错误提示（不需要高亮，仅反馈）
+                if (userVal.trim() !== '') {
+                    showInstantFeedback(feedbackSpan, false);
+                } else {
+                    // 清空时移除反馈
+                    feedbackSpan.classList.remove('show');
+                }
+                return;
+            }
+        };
+        inputElem.addEventListener('input', handler);
+        inputElem.addEventListener('blur', handler);
+    }
+    
+    // 渲染界面，并增加反馈图标
+    function renderExercise() {
+        const container = document.getElementById('textDisplayArea');
+        container.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        uiMapping = [];
+        
+        for (let idx = 0; idx < renderItems.length; idx++) {
+            const item = renderItems[idx];
+            if (item.isLineBreak) {
+                const brDiv = document.createElement('div');
+                brDiv.className = 'paragraph-break';
+                fragment.appendChild(brDiv);
+                continue;
+            }
+            if (item.isSpace) {
+                const spaceSpan = document.createElement('span');
+                spaceSpan.innerHTML = '&nbsp;';
+                spaceSpan.style.display = 'inline-block';
+                spaceSpan.style.width = '0.9rem';
+                fragment.appendChild(spaceSpan);
+                continue;
+            }
+            const charWrapper = document.createElement('span');
+            charWrapper.className = 'char-unit';
+            const hanSpan = document.createElement('span');
+            hanSpan.className = 'char-han';
+            hanSpan.textContent = item.displayChar;
+            const inputBox = document.createElement('input');
+            inputBox.type = 'text';
+            inputBox.className = 'punct-input';
+            inputBox.placeholder = '';
+            inputBox.maxLength = 2;
+            inputBox.setAttribute('data-render-idx', item.renderIndex);
+            inputBox.value = '';
+            
+            const feedbackSpan = document.createElement('span');
+            feedbackSpan.className = 'feedback-icon';
+            feedbackSpan.textContent = '';
+            
+            charWrapper.appendChild(hanSpan);
+            charWrapper.appendChild(inputBox);
+            charWrapper.appendChild(feedbackSpan);
+            fragment.appendChild(charWrapper);
+            
+            uiMapping.push({
+                renderIndex: item.renderIndex,
+                inputElem: inputBox,
+                expected: item.expectedPunct,
+                feedbackSpan: feedbackSpan
+            });
+            bindInputValidation(inputBox, item.expectedPunct, feedbackSpan);
+        }
+        container.appendChild(fragment);
+    }
+    
+    function clearHighlights() {
+        for (let map of uiMapping) {
+            map.inputElem.classList.remove('correct', 'incorrect');
+        }
+    }
+    
+    // 评分并高亮，同时更新评价文字
+    function gradeAndHighlight() {
+        let correctCount = 0;
+        clearHighlights();
+        
+        const indexToMap = new Map();
+        for (let map of uiMapping) {
+            indexToMap.set(map.renderIndex, map);
+        }
+        
+        for (let pos of punctPositions) {
+            const map = indexToMap.get(pos.renderIndex);
+            if (!map) continue;
+            const userVal = map.inputElem.value;
+            const isCorrect = isPunctMatch(pos.expectedPunct, userVal);
+            if (isCorrect) {
+                correctCount++;
+                map.inputElem.classList.add('correct');
+            } else {
+                map.inputElem.classList.add('incorrect');
+            }
+        }
+        
+        const total = punctPositions.length;
+        const percent = total === 0 ? 0 : (correctCount / total) * 100;
+        updateScoreDisplay(percent, total, correctCount);
+        updateGradeComment(percent);
+        return { correctCount, totalCount: total, percent };
+    }
+    
+    function updateScoreDisplay(percent, total, correct) {
+        const percentSpan = document.getElementById('scorePercent');
+        const detailSpan = document.getElementById('scoreDetail');
+        if (percentSpan) percentSpan.innerText = Math.floor(percent);
+        if (detailSpan) detailSpan.innerText = `(${correct} / ${total})`;
+    }
+    
+    // 根据分数更新评价文字
+    function updateGradeComment(percent) {
+        const commentDiv = document.getElementById('feedbackMessage');
+        if (!commentDiv) return;
+        if (percent >= 85) {
+            commentDiv.innerHTML = '🎉 优秀！';
+        } else if (percent >= 60) {
+            commentDiv.innerHTML = '💪 再接再厉';
+        } else {
+            commentDiv.innerHTML = '📘 挑战失败，再试试吧';
+        }
+    }
+    
+    function resetAll() {
+        for (let map of uiMapping) {
+            map.inputElem.value = '';
+            map.inputElem.classList.remove('correct', 'incorrect');
+            if (map.feedbackSpan) {
+                map.feedbackSpan.classList.remove('show');
+                map.feedbackSpan.textContent = '';
+            }
+        }
+        const total = punctPositions.length;
+        updateScoreDisplay(0, total, 0);
+        updateGradeComment(0);
+    }
+    
+    function showFullCorrectTextModal() {
+        const modal = document.getElementById('correctModal');
+        const textContainer = document.getElementById('fullCorrectTextDisplay');
+        textContainer.innerText = FULL_CORRECT_TEXT;
+        modal.style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('correctModal').style.display = 'none';
+    }
+    
+    function init() {
+        const { renderItems: items, punctPositions: puncts } = parseSequences(FULL_CORRECT_TEXT);
+        renderItems = items;
+        punctPositions = puncts;
+        
+        renderExercise();
+        
+        const total = punctPositions.length;
+        updateScoreDisplay(0, total, 0);
+        updateGradeComment(0);
+        
+        const gradeBtn = document.getElementById('gradeBtn');
+        const resetBtn = document.getElementById('resetAllBtn');
+        const showBtn = document.getElementById('showCorrectBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalBg = document.getElementById('correctModal');
+        
+        gradeBtn.onclick = () => gradeAndHighlight();
+        resetBtn.onclick = () => resetAll();
+        showBtn.onclick = () => showFullCorrectTextModal();
+        closeModalBtn.onclick = closeModal;
+        modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
+    }
+    
+    window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

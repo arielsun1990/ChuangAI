@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>《本草纲目·序》· 医古文</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f7f3eb;
+      font-family: "Noto Serif SC", "华文楷体", "楷体", "KaiTi", "宋体", "SimSun", serif;
+      display: flex; justify-content: center; align-items: flex-start;
+      min-height: 100vh; padding: 2rem 1.5rem; color: #3e3a35;
+    }
+    .container {
+      max-width: 820px; width: 100%; background: #fffef9;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06), 0 8px 16px rgba(0,0,0,0.04);
+      border-radius: 32px; padding: 3rem 2.5rem; position: relative;
+      border: 1px solid #ece3d5; transition: padding 0.2s;
+    }
+    .container::before, .container::after {
+      content: ""; position: absolute; left: 2rem; right: 2rem; height: 1px;
+      background: linear-gradient(to right, #d9cdb0, transparent, #d9cdb0);
+    }
+    .container::before { top: 2rem; } .container::after { bottom: 2rem; }
+    h1 {
+      font-size: 2.8rem; font-weight: 500; text-align: center;
+      color: #4e4337; margin-bottom: 2.5rem; letter-spacing: 6px;
+      font-family: "Noto Serif SC", "华文楷体", "楷体", "KaiTi", "宋体", serif;
+      text-shadow: 1px 1px 0 rgba(255,255,255,0.8);
+      border-bottom: 1px dashed #d6cbb7; padding-bottom: 1.2rem;
+    }
+    .font-controls {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 0.5rem; margin-bottom: 1rem; font-size: 0.9rem; color: #6b5d4c;
+    }
+    .font-controls button {
+      background: #f5efe2; border: 1px solid #cfb991; color: #4e3e2c;
+      font-size: 1rem; font-weight: bold; width: 2rem; height: 2rem;
+      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+    .font-controls button:hover { background: #e3d5bc; border-color: #b3905c; }
+    .font-controls .reset-btn { width: auto; padding: 0 1rem; font-weight: normal; font-size: 0.85rem; }
+    .stats-button-row {
+      display: flex; justify-content: flex-end; margin-bottom: 1.2rem;
+    }
+    .stats-toggle-btn {
+      background: #f5efe2; border: 1px solid #cfb991; color: #4e3e2c;
+      font-size: 0.85rem; border-radius: 20px; padding: 0.3rem 1.2rem;
+      cursor: pointer; transition: background 0.2s; font-family: inherit;
+    }
+    .stats-toggle-btn:hover { background: #e3d5bc; }
+    .passage {
+      font-size: 21px; line-height: 2.2; text-align: justify;
+      text-indent: 2em; margin-bottom: 1.8rem; word-spacing: 0.1em;
+      color: #2c241a; font-weight: 400; transition: font-size 0.2s;
+    }
+    .annotated {
+      display: inline; font-weight: 500; cursor: pointer;
+      background: rgba(220,200,160,0.18); border-radius: 4px;
+      padding: 0 2px; border-bottom: 2px solid transparent;
+      transition: background 0.2s ease, border-color 0.2s, box-shadow 0.2s;
+    }
+    .annotated:hover { background: rgba(220,200,160,0.35); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .note-card {
+      position: fixed; z-index: 1000; right: 2rem; top: 50%;
+      transform: translateY(-50%) translateX(20px); background: #fefaf2;
+      border-left: 5px solid #b48b5a; border-radius: 16px;
+      box-shadow: 0 20px 35px rgba(100,70,40,0.2), 0 6px 12px rgba(0,0,0,0.08);
+      padding: 1.2rem 1.4rem; max-width: 300px; width: fit-content;
+      font-size: 15px; line-height: 1.8; color: #4b3a2a; font-weight: normal;
+      text-indent: 0; text-decoration: none; background: rgba(254,250,242,0.97);
+      backdrop-filter: blur(4px); opacity: 0; visibility: hidden;
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+      pointer-events: none; white-space: normal; word-break: break-word; box-sizing: border-box;
+    }
+    .note-card.active {
+      opacity: 1; visibility: visible; transform: translateY(-50%) translateX(0);
+      pointer-events: auto;
+    }
+    .note-card p { margin: 0; text-indent: 0; }
+    .stats-panel {
+      background: #f9f4ea; border: 1px solid #d6cbb7; border-radius: 16px;
+      padding: 1.2rem; margin: 0 0 1.8rem 0; display: none; font-size: 0.95rem; color: #4b3a2a;
+    }
+    .stats-panel.visible { display: block; }
+    .stats-panel h3 {
+      font-size: 1.2rem; margin-bottom: 0.8rem; color: #5b4b32;
+      border-bottom: 1px dotted #cfb991; padding-bottom: 0.4rem;
+    }
+    .stats-list { display: flex; flex-wrap: wrap; gap: 0.8rem; list-style: none; }
+    .stats-list li {
+      background: #fffaf2; border-radius: 20px; padding: 0.2rem 1rem;
+      font-size: 0.9rem; display: flex; align-items: center; gap: 0.3rem;
+    }
+    .stats-word { font-weight: 600; }
+    .discussion-section {
+      margin-top: 2.8rem; border-top: 2px dashed #d6cbb7; padding-top: 2rem;
+    }
+    .discussion-section h2 { font-size: 1.6rem; color: #4e4337; margin-bottom: 1rem; font-weight: 500; }
+    .post-form {
+      background: #f9f4ea; border-radius: 16px; padding: 1.2rem; margin-bottom: 2rem;
+    }
+    .post-form input, .post-form textarea {
+      width: 100%; padding: 0.6rem; margin-bottom: 0.8rem;
+      border: 1px solid #d6cbb7; border-radius: 8px; font-family: inherit;
+      font-size: 0.95rem; background: #fffef9;
+    }
+    .post-form textarea { resize: vertical; min-height: 80px; }
+    .post-form button {
+      background: #b48b5a; color: white; border: none; padding: 0.6rem 1.5rem;
+      border-radius: 20px; font-size: 0.95rem; cursor: pointer; transition: background 0.2s;
+    }
+    .post-form button:hover { background: #9b6e4a; }
+    .discussion-list { list-style: none; }
+    .discussion-item {
+      background: #fefaf5; border-radius: 12px; padding: 1rem;
+      margin-bottom: 1.2rem; border: 1px solid #ece3d5;
+    }
+    .discussion-meta {
+      font-size: 0.8rem; color: #7b6e5c; margin-bottom: 0.4rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .discussion-content { margin: 0.5rem 0; font-size: 0.95rem; line-height: 1.6; }
+    .like-btn {
+      background: none; border: 1px solid #cfb991; color: #5b4b32;
+      font-size: 0.8rem; padding: 0.2rem 0.8rem; border-radius: 12px;
+      cursor: pointer; transition: background 0.2s; margin-right: 0.3rem;
+    }
+    .like-btn:hover { background: #f0e5d2; }
+    .reply-btn {
+      background: none; border: 1px solid #cfb991; color: #5b4b32;
+      font-size: 0.8rem; padding: 0.2rem 0.8rem; border-radius: 12px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .reply-btn:hover { background: #f0e5d2; }
+    .reply-form {
+      margin-top: 0.8rem; margin-left: 1.5rem; background: #f9f4ea;
+      border-radius: 12px; padding: 0.8rem; display: none;
+    }
+    .reply-form.active { display: block; }
+    .reply-form input, .reply-form textarea {
+      width: 100%; padding: 0.4rem; margin-bottom: 0.5rem;
+      border: 1px solid #d6cbb7; border-radius: 6px; font-size: 0.9rem;
+    }
+    .reply-form button {
+      background: #b48b5a; color: white; border: none;
+      padding: 0.4rem 1rem; border-radius: 12px; font-size: 0.85rem; cursor: pointer;
+    }
+    .reply-item {
+      margin-left: 2rem; background: #faf7f0; border-radius: 8px;
+      padding: 0.6rem 1rem; margin-top: 0.6rem; font-size: 0.9rem;
+      border-left: 3px solid #cfb991; display: flex; flex-direction: column;
+    }
+    .reply-item .discussion-meta { justify-content: space-between; }
+    .reply-item .like-btn { font-size: 0.7rem; padding: 0.1rem 0.6rem; }
+    @media (max-width: 700px) {
+      body { padding: 1rem 0.8rem; }
+      .container { padding: 2rem 1.2rem; }
+      h1 { font-size: 2.2rem; letter-spacing: 3px; }
+      .passage { font-size: 18px; text-indent: 2em; line-height: 2.1; }
+      .note-card {
+        right: 1rem; left: 1rem; max-width: calc(100vw - 2rem);
+        top: auto; bottom: 1.5rem; transform: translateY(20px);
+        border-radius: 16px 16px 4px 16px;
+      }
+      .note-card.active { transform: translateY(0); }
+    }
+    .hint {
+      text-align: right; font-size: 0.85rem; color: #b7a58b;
+      margin-top: 2.2rem; font-style: italic; border-top: 1px dotted #ddd2bf;
+      padding-top: 1.3rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>本草纲目·序</h1>
+
+    <div class="font-controls">
+      <span>字号：</span>
+      <button id="decreaseFont" title="缩小字号">−</button>
+      <button id="resetFont" class="reset-btn" title="恢复默认">默认</button>
+      <button id="increaseFont" title="增大字号">+</button>
+    </div>
+    <div class="stats-button-row">
+      <button id="toggleStatsBtn" class="stats-toggle-btn">📊 注释统计</button>
+    </div>
+
+    <div id="statsPanel" class="stats-panel visible">
+      <h3>注释查看次数统计</h3>
+      <ul id="statsList" class="stats-list"></ul>
+    </div>
+
+    <!-- 第一段 -->
+    <div class="passage" id="mainText1">
+      紀稱：<span class="annotated" data-note="望龍光知古劍：據《晉書·張華傳》載，張華望見牛斗二星間常有紫氣，雷焕認爲是豫章豐城之劍氣上通於天的緣故。後果從豐城監獄地基中掘得石匣，内有龍泉、太阿雙劍。龍光，寶劍的光芒。">望龍光知古劍</span>，<span class="annotated" data-note="覘寶氣辯明珠：據唐代蘇鶚《杜陽雜編》卷上載，唐肅宗李亨即位後，國庫中出現神異的光氣，肅宗認爲是自己兒時玄宗所賜上清珠發出的，檢出果然。覘（chān）：觀察。">覘寶氣辯明珠</span>。故<span class="annotated" data-note="萍實：水萍的果實。此物大如斗，直觸楚昭王所乘之船，惟孔子可識。事見漢代劉向《説苑·辯物》。商羊：傳説中的鳥名，常在大雨前屈一足起舞。事見《孔子家語·辯政》。">萍實商羊</span>，非<span class="annotated" data-note="天明：天賦智慧。">天明</span>莫<span class="annotated" data-note="洞：洞察。">洞</span>。厥後博物稱<span class="annotated" data-note="華：指西晉張華，著有《博物志》十卷，《晉書·張華傳》稱其“博物洽聞，世無與比”。">華</span>，辯字稱<span class="annotated" data-note="康：善於辨别文字要首推嵇康。事見《藝文類聚》卷七十八引《神仙傳》。">康</span>，析寶玉稱<span class="annotated" data-note="倚頓：亦作“猗頓”，春秋時魯國富豪，以能識别珠寶著稱。載《淮南子·氾論訓》。">倚頓</span>，亦僅僅<span class="annotated" data-note="晨星：晨見之星，此喻人才稀少。">晨星</span>耳。
+    </div>
+
+    <!-- 第二段 -->
+    <div class="passage" id="mainText2">
+      <span class="annotated" data-note="楚：指湖北。湖北爲古代楚地，故稱。">楚</span><span class="annotated" data-note="蘄（qí）陽：今蘄春縣。">蘄陽</span>李君東璧，一日過予<span class="annotated" data-note="弇（yǎn）山園：園名。爲王世貞所築，在江蘇太倉隆福寺西。">弇山園</span>謁予，留飲數日。予窺其人，<span class="annotated" data-note="睟（suì）然：潤澤貌。">睟然</span>貌也，<span class="annotated" data-note="癯（qú）然：清瘦貌。">癯然</span>身也，<span class="annotated" data-note="津津然：興味濃厚貌。">津津然</span><span class="annotated" data-note="譚：通“談”。">譚</span>議也，真<span class="annotated" data-note="北斗以南：指普天之下。">北斗以南</span>一人。解其裝，無<span class="annotated" data-note="長（zhànɡ）物：多餘的東西。語出南朝宋劉義慶《世説新語·德行》。">長物</span>，有《本草綱目》數十卷。謂予曰：“時珍，<span class="annotated" data-note="荆楚：楚國。此指楚地。荆，楚國的别稱，因楚國原建於荆山（今湖北南章西）一帶，故名。">荆楚</span>鄙人也。幼多羸疾，質成<span class="annotated" data-note="鈍椎（chuí）：愚鈍。">鈍椎</span>，長耽典籍，若啖蔗飴。遂<span class="annotated" data-note="漁獵：喻泛覽博涉。">漁獵</span>羣書，搜羅百氏，凡子、史、經、傳、聲韻、農圃、醫卜、星相、樂府诸家，稍有得處，輒著數言。古有《本草》一書，自炎皇及漢、梁、唐、宋，下迨國朝，註解羣氏舊矣。第其中舛謬差譌遺漏，不可枚數。迺敢奮<span class="annotated" data-note="編摩：猶編集。">編摩</span>之志，<span class="annotated" data-note="僭（jiàn）：超越身份，冒用在上者的職權行事。">僭</span>纂述之權。歲歷三十稔，書攷八百餘家，稿凡三易。複者<span class="annotated" data-note="芟（shān）：除去。">芟</span>之，闕者緝之，訛者<span class="annotated" data-note="繩：糾正。">繩</span>之。舊本一千五百一十八種，今增藥<span class="annotated" data-note="三百七十四種：據人民衛生出版社劉衡如校勘本，實有377種。">三百七十四種</span>，分爲一十六部，著成五十二卷。雖非集成，亦粗大備，僭名曰《本草綱目》。願乞一言，以託不朽。”
+    </div>
+
+    <!-- 第三段、第四段 -->
+    <div class="passage" id="mainText3">
+      予開卷細<span class="annotated" data-note="玩：研讀。">玩</span>，每藥標正名爲綱，附釋名爲目，正始也；次以集解、辯疑、正誤，詳其土産形狀也；次以氣味、主治、附方，著其<span class="annotated" data-note="體用：指藥物的性質和功用。">體用</span>也。上自<span class="annotated" data-note="墳典：三墳、五典的并稱。">墳典</span>，下及<span class="annotated" data-note="傳奇：古代短篇小説。此指一般的文藝作品。">傳奇</span>，凡有相關，靡不備采。如入<span class="annotated" data-note="金谷之園：指晉代富豪石崇在洛陽所築的金谷園。">金谷之園</span>，種<span class="annotated" data-note="色：種類。">色</span>奪目；如登龍君之宫，寶藏悉陳；如對冰壺玉鑑，毛髮可指數也。博而不繁，詳而有要，綜核究竟，直窺淵海。兹豈僅以醫書<span class="annotated" data-note="覯（ɡòu）：遇見。此謂看待。">覯</span>哉？實<span class="annotated" data-note="性理：人性與天理。指宋儒的性理之學。">性理</span>之精微，<span class="annotated" data-note="通典：普遍的法則。">通典</span>之<span class="annotated" data-note="秘籙（lù）：秘籍。">秘籙</span>，臣民之重寶也。李君用心<span class="annotated" data-note="嘉惠：指施予他人恩惠。">嘉惠</span>何勤哉！噫！<span class="annotated" data-note="碔（wǔ）：似玉之石。">碔</span>玉莫<span class="annotated" data-note="剖：分辨。">剖</span>，<span class="annotated" data-note="朱紫相傾：謂紫色排斥朱色。喻以邪亂正，真僞混淆。古代以朱爲正色，紫爲雜色。傾，排斥。">朱紫相傾</span>，弊也久矣。故辯<span class="annotated" data-note="“故辯”二句：因此要辨别占滿一車的巨骨，必定要等待孔子。事見《國語·魯語下》。專車之骨，獨占一車的巨骨。竢，同“俟”。等待。魯儒，指孔子。">專車之骨</span>，必竢魯儒；博<span class="annotated" data-note="“博支機”二句：要通曉織女的支機石，必定要詢問賣卜的嚴君平。事見《太平御覽》卷八引劉義慶《集林》。博，通曉。支機之石，指織女墊織機的石塊。賣卜，指漢代嚴君平。">支機之石</span>，必訪賣卜。予方著《弇州<span class="annotated" data-note="巵（zhī）言：自然隨意之言。">巵言</span>》，<span class="annotated" data-note="恚（huì）：怨恨。此謂遺憾。">恚</span>博古如<span class="annotated" data-note="丹鉛巵言：指明代楊慎所著《丹鉛餘録》《丹鉛續録》《丹鉛摘録》等考據學著作，其門人將此三書删輯爲《丹鉛總録》。">《丹鉛巵言》</span>後乏人也，何幸覩兹集哉！兹集也，藏之深山石室無當，<span class="annotated" data-note="盍：何不。">盍</span><span class="annotated" data-note="鍥（qiè）：刻。此謂刻版印刷。">鍥</span>之以<span class="annotated" data-note="共：供給。此義後作“供”。">共</span>天下後世味<span class="annotated" data-note="太玄：西漢學者揚雄（字子雲）模仿《周易》所作的《太玄經》。">《太玄》</span>如子雲者？
+    </div>
+    <div class="passage" id="mainText4">
+      <span class="annotated" data-note="萬曆歲庚寅：1590年。萬曆，明神宗朱翊鈞的年號。">時萬曆歲庚寅</span><span class="annotated" data-note="上元日：農曆正月十五。">春上元日</span>，弇州山人鳳洲王世貞拜撰。
+    </div>
+
+    <!-- 讨论区 -->
+    <div class="discussion-section">
+      <h2>📖 课堂讨论区</h2>
+      <div class="post-form" id="mainPostForm">
+        <input type="text" id="postStudentId" placeholder="学号" required>
+        <input type="text" id="postStudentName" placeholder="姓名" required>
+        <textarea id="postContent" placeholder="写下你的问题或见解…" required></textarea>
+        <button id="submitPostBtn">发布问题</button>
+      </div>
+      <ul id="discussionList" class="discussion-list"></ul>
+    </div>
+
+    <div id="globalNoteCard" class="note-card"></div>
+    <div class="hint">✨ 鼠标悬停浅色背景词句，右侧即显示注释</div>
+  </div>
+
+  <script>
+    (function() {
+      const annotatedElements = document.querySelectorAll('.annotated');
+      const colorPalette = ['#a0522d','#2e5a4b','#9b4b5b','#5d5179','#b5693e','#4f6d7a'];
+      const clickCounts = {};
+
+      annotatedElements.forEach((el, index) => {
+        const color = colorPalette[index % colorPalette.length];
+        el.style.color = color;
+        el.style.borderBottomColor = color;
+        el.dataset.annotId = 'annot-' + index;
+        clickCounts[el.dataset.annotId] = 0;
+      });
+
+      const passageEls = document.querySelectorAll('.passage');
+      const noteCardEl = document.getElementById('globalNoteCard');
+      const defaultPassageSize = 21, defaultNoteSize = 15;
+      let currentPassageSize = defaultPassageSize, currentNoteSize = defaultNoteSize;
+      const step = 2, minSize = 14, maxSize = 36;
+
+      function updateFontSizes() {
+        passageEls.forEach(el => el.style.fontSize = currentPassageSize + 'px');
+        noteCardEl.style.fontSize = currentNoteSize + 'px';
+      }
+      document.getElementById('increaseFont').addEventListener('click', () => {
+        if (currentPassageSize < maxSize) {
+          currentPassageSize += step;
+          currentNoteSize = Math.min(currentNoteSize + step, maxSize - (defaultPassageSize - defaultNoteSize));
+          updateFontSizes();
+        }
+      });
+      document.getElementById('decreaseFont').addEventListener('click', () => {
+        if (currentPassageSize > minSize) {
+          currentPassageSize -= step;
+          currentNoteSize = Math.max(currentNoteSize - step, minSize);
+          updateFontSizes();
+        }
+      });
+      document.getElementById('resetFont').addEventListener('click', () => {
+        currentPassageSize = defaultPassageSize;
+        currentNoteSize = defaultNoteSize;
+        updateFontSizes();
+      });
+      updateFontSizes();
+
+      let activeAnnotated = null, hideTimer = null, isOverCard = false;
+
+      function updateStatsPanel() {
+        const statsList = document.getElementById('statsList');
+        if (!statsList) return;
+        const items = [];
+        for (let el of annotatedElements) {
+          const count = clickCounts[el.dataset.annotId] || 0;
+          if (count > 0) items.push({ word: el.textContent, count });
+        }
+        items.sort((a, b) => b.count - a.count);
+        statsList.innerHTML = '';
+        if (items.length === 0) {
+          statsList.innerHTML = '<li>暂无查看记录</li>';
+        } else {
+          items.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="stats-word">${item.word}</span>：${item.count}次`;
+            statsList.appendChild(li);
+          });
+        }
+      }
+
+      function showCard(el) {
+        const note = el.getAttribute('data-note');
+        if (!note || !noteCardEl) return;
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        if (activeAnnotated === el) return;
+        hideCardImmediate();
+        noteCardEl.innerHTML = `<p>${note}</p>`;
+        noteCardEl.classList.add('active');
+        activeAnnotated = el;
+        el.style.background = 'rgba(220,200,160,0.45)';
+        clickCounts[el.dataset.annotId] = (clickCounts[el.dataset.annotId] || 0) + 1;
+        updateStatsPanel();
+      }
+
+      function hideCardImmediate() {
+        if (noteCardEl) noteCardEl.classList.remove('active');
+        if (activeAnnotated) { activeAnnotated.style.background = ''; activeAnnotated = null; }
+        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      }
+
+      function scheduleHide() {
+        if (isOverCard) return;
+        if (hideTimer) clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => hideCardImmediate(), 200);
+      }
+
+      annotatedElements.forEach(el => {
+        el.addEventListener('mouseenter', () => showCard(el));
+        el.addEventListener('mouseleave', () => scheduleHide());
+      });
+      noteCardEl.addEventListener('mouseenter', () => { isOverCard = true; if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } });
+      noteCardEl.addEventListener('mouseleave', () => { isOverCard = false; scheduleHide(); });
+      hideCardImmediate();
+
+      const statsPanel = document.getElementById('statsPanel');
+      document.getElementById('toggleStatsBtn').addEventListener('click', () => {
+        statsPanel.classList.toggle('visible');
+        if (statsPanel.classList.contains('visible')) updateStatsPanel();
+      });
+      updateStatsPanel();
+
+      // ---------- 讨论区 (含点赞，按点赞数降序) ----------
+      const discussionList = document.getElementById('discussionList');
+      const discussions = []; // { studentId, studentName, content, timestamp, likes, replies: [{...likes}] }
+
+      function renderDiscussions() {
+        // 按主帖点赞数降序排列
+        const sortedDiscussions = [...discussions].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+        discussionList.innerHTML = '';
+        sortedDiscussions.forEach((disc) => {
+          const discIndex = discussions.indexOf(disc); // 保持原始索引用于操作
+          const discItem = document.createElement('li');
+          discItem.className = 'discussion-item';
+
+          // 构建回复列表，回复按点赞数降序
+          const repliesSorted = (disc.replies || []).slice().sort((a, b) => (b.likes || 0) - (a.likes || 0));
+          const repliesHtml = repliesSorted.map(reply => `
+            <div class="reply-item">
+              <div class="discussion-meta">
+                <span><strong>${reply.studentName}</strong> (${reply.studentId})</span>
+                <span>${reply.timestamp}</span>
+              </div>
+              <div>${reply.content}</div>
+              <div style="display: flex; justify-content: flex-end; align-items: center;">
+                <button class="like-btn reply-like-btn" data-disc-index="${discIndex}" data-reply-id="${reply.id}">👍 ${reply.likes || 0}</button>
+              </div>
+            </div>
+          `).join('');
+
+          discItem.innerHTML = `
+            <div class="discussion-meta">
+              <span><strong>${disc.studentName}</strong> (${disc.studentId})</span>
+              <span>${disc.timestamp}</span>
+            </div>
+            <div class="discussion-content">${disc.content}</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button class="like-btn main-like-btn" data-disc-index="${discIndex}">👍 ${disc.likes || 0}</button>
+              <button class="reply-btn" data-disc-index="${discIndex}">💬 回复</button>
+            </div>
+            <div class="reply-form" id="replyForm-${discIndex}">
+              <input type="text" class="reply-student-id" placeholder="你的学号" required>
+              <input type="text" class="reply-student-name" placeholder="你的姓名" required>
+              <textarea class="reply-content" placeholder="写下回复…" required></textarea>
+              <button class="submit-reply-btn" data-disc-index="${discIndex}">提交回复</button>
+            </div>
+            <div class="replies-container">${repliesHtml}</div>
+          `;
+
+          discussionList.appendChild(discItem);
+        });
+
+        // 主帖点赞按钮事件
+        document.querySelectorAll('.main-like-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const idx = parseInt(this.getAttribute('data-disc-index'));
+            if (!isNaN(idx) && discussions[idx]) {
+              discussions[idx].likes = (discussions[idx].likes || 0) + 1;
+              renderDiscussions();
+            }
+          });
+        });
+
+        // 回复点赞按钮事件
+        document.querySelectorAll('.reply-like-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const discIdx = parseInt(this.getAttribute('data-disc-index'));
+            const replyId = this.getAttribute('data-reply-id');
+            const disc = discussions[discIdx];
+            if (disc && disc.replies) {
+              const reply = disc.replies.find(r => r.id == replyId);
+              if (reply) {
+                reply.likes = (reply.likes || 0) + 1;
+                renderDiscussions();
+              }
+            }
+          });
+        });
+
+        // 回复按钮展开表单
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const idx = this.getAttribute('data-disc-index');
+            const form = document.getElementById('replyForm-' + idx);
+            if (form) form.classList.toggle('active');
+          });
+        });
+
+        // 提交回复
+        document.querySelectorAll('.submit-reply-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const idx = parseInt(this.getAttribute('data-disc-index'));
+            const form = document.getElementById('replyForm-' + idx);
+            const studentId = form.querySelector('.reply-student-id').value.trim();
+            const studentName = form.querySelector('.reply-student-name').value.trim();
+            const content = form.querySelector('.reply-content').value.trim();
+            if (!studentId || !studentName || !content) {
+              alert('请完整填写学号、姓名和回复内容');
+              return;
+            }
+            const now = new Date();
+            const timestamp = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            const replyId = Date.now() + Math.random();
+            discussions[idx].replies.push({ id: replyId, studentId, studentName, content, timestamp, likes: 0 });
+            form.classList.remove('active');
+            form.querySelector('.reply-student-id').value = '';
+            form.querySelector('.reply-student-name').value = '';
+            form.querySelector('.reply-content').value = '';
+            renderDiscussions();
+          });
+        });
+      }
+
+      document.getElementById('submitPostBtn').addEventListener('click', () => {
+        const studentId = document.getElementById('postStudentId').value.trim();
+        const studentName = document.getElementById('postStudentName').value.trim();
+        const content = document.getElementById('postContent').value.trim();
+        if (!studentId || !studentName || !content) {
+          alert('请完整填写学号、姓名和问题内容');
+          return;
+        }
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        discussions.push({ studentId, studentName, content, timestamp, likes: 0, replies: [] });
+        document.getElementById('postStudentId').value = '';
+        document.getElementById('postStudentName').value = '';
+        document.getElementById('postContent').value = '';
+        renderDiscussions();
+      });
+
+      renderDiscussions();
+    })();
+  </script>
+</body>
+</html>

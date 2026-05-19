@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《本草纲目》序 — 难字点击统计</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-paper: #f5efe0;
+            --bg-light: #faf6ed;
+            --bg-warm: #f0e8d5;
+            --text-ink: #2c1b0e;
+            --text-body: #3d2b1a;
+            --title-red: #8b1a1a;
+            --accent-red: #c41e3a;
+            --accent-gold: #8b6914;
+            --accent-gold-light: #b8942e;
+            --border-warm: #c4a97d;
+            --border-light: #d9c9a5;
+            --panel-bg: #fdf9f2;
+            --shadow-soft: 0 2px 16px rgba(60, 30, 10, 0.07);
+            --shadow-panel: 0 4px 24px rgba(60, 30, 10, 0.10);
+            --highlight-bg: #fff3e0;
+            --rank-gold: #c9a96e;
+            --rank-silver: #9a9a9a;
+            --rank-bronze: #b87351;
+            --float-up-color: #c41e3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #e8dcc8;
+            background-image:
+                radial-gradient(ellipse at 20% 10%, rgba(180, 140, 90, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 90%, rgba(160, 120, 70, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 50%, rgba(200, 170, 120, 0.04) 0%, transparent 80%);
+            min-height: 100vh;
+            font-family: 'Noto Serif SC', 'STSong', 'SimSun', 'KaiTi', 'STKaiti', serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 0;
+            max-width: 1300px;
+            width: 100%;
+            background: var(--bg-paper);
+            border-radius: 4px;
+            box-shadow: var(--shadow-soft), 0 0 0 1px rgba(160, 130, 90, 0.25);
+            position: relative;
+            overflow: visible;
+            min-height: 90vh;
+        }
+
+        .main-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border: 1px solid rgba(180, 150, 110, 0.5);
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .main-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border: 1px solid rgba(180, 150, 110, 0.3);
+            border-radius: 1px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-area {
+            flex: 1 1 70%;
+            padding: 40px 36px 36px 40px;
+            position: relative;
+            z-index: 1;
+            min-width: 0;
+            border-right: 1px solid var(--border-light);
+            background:
+                linear-gradient(to bottom,
+                    rgba(250, 245, 235, 0.4) 0%,
+                    rgba(255, 252, 245, 0.2) 30%,
+                    rgba(250, 245, 235, 0.3) 100%);
+        }
+
+        .title-block {
+            text-align: center;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .title-main {
+            font-size: 22pt;
+            font-weight: 700;
+            color: var(--title-red);
+            letter-spacing: 0.12em;
+            line-height: 1.3;
+            display: inline-block;
+            position: relative;
+            padding: 0 20px;
+        }
+        .title-main::before,
+        .title-main::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 50px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent-gold), transparent);
+        }
+        .title-main::before {
+            right: 100%;
+        }
+        .title-main::after {
+            left: 100%;
+        }
+        .title-ornament {
+            display: block;
+            margin: 6px auto 0;
+            width: 80px;
+            height: 2px;
+            background: var(--accent-gold);
+            border-radius: 1px;
+            opacity: 0.7;
+        }
+        .title-sub {
+            font-size: 11pt;
+            color: #6b4d30;
+            margin-top: 4px;
+            letter-spacing: 0.08em;
+            font-weight: 400;
+        }
+
+        .text-container {
+            font-size: 16pt;
+            line-height: 2;
+            color: var(--text-body);
+            text-align: justify;
+            letter-spacing: 0.03em;
+            word-spacing: 0.05em;
+            position: relative;
+            padding: 0 4px;
+        }
+        .text-container p {
+            text-indent: 2em;
+            margin-bottom: 0.6em;
+        }
+        .text-container p.para-first {
+            text-indent: 2em;
+        }
+
+        .hard-word {
+            color: #5c1a0e;
+            border-bottom: 2px dotted var(--accent-red);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.18s ease;
+            padding: 1px 2px;
+            border-radius: 2px;
+            font-weight: 500;
+            display: inline;
+        }
+        .hard-word:hover {
+            background-color: #fff3e0;
+            border-bottom-color: #e85040;
+            border-bottom-style: solid;
+            color: #8b1a1a;
+            transform: translateY(-1px);
+            box-shadow: 0 1px 3px rgba(180, 60, 40, 0.18);
+            border-radius: 3px;
+        }
+        .hard-word:active {
+            transform: scale(1.08);
+            background-color: #ffe0d0;
+            transition: all 0.06s ease;
+        }
+        .hard-word.flash-click {
+            animation: wordFlash 0.5s ease-out;
+        }
+        @keyframes wordFlash {
+            0% {
+                background-color: #ffcc80;
+                transform: scale(1.12);
+                box-shadow: 0 0 12px rgba(200, 60, 30, 0.5);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+                box-shadow: none;
+            }
+        }
+
+        .float-plus {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--float-up-color);
+            animation: floatUp 0.9s ease-out forwards;
+            white-space: nowrap;
+            font-family: 'Noto Serif SC', 'STSong', serif;
+            text-shadow: 0 1px 2px rgba(180, 40, 20, 0.3);
+        }
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-28px) scale(1.15);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-56px) scale(0.7);
+            }
+        }
+
+        .stats-panel {
+            flex: 0 0 310px;
+            width: 310px;
+            padding: 28px 18px 24px 18px;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-light);
+            border-radius: 0 4px 4px 0;
+            box-shadow: inset 2px 0 8px rgba(0, 0, 0, 0.02);
+        }
+        .panel-header {
+            text-align: center;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .panel-title {
+            font-size: 15pt;
+            font-weight: 700;
+            color: var(--title-red);
+            letter-spacing: 0.08em;
+            position: relative;
+            display: inline-block;
+        }
+        .panel-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 1.5px;
+            background: var(--accent-gold);
+            margin: 5px auto 0;
+            border-radius: 1px;
+        }
+        .panel-subtitle {
+            font-size: 10pt;
+            color: #8b7355;
+            margin-top: 2px;
+            letter-spacing: 0.04em;
+        }
+        .total-clicks {
+            text-align: center;
+            font-size: 11pt;
+            color: #5c3d20;
+            margin-bottom: 10px;
+            padding: 6px 12px;
+            background: rgba(180, 140, 90, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+            align-self: center;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
+        }
+        .total-clicks strong {
+            color: var(--accent-red);
+            font-size: 16pt;
+            font-weight: 900;
+        }
+
+        .stats-list-wrapper {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            margin-top: 6px;
+            padding-right: 4px;
+            scroll-behavior: smooth;
+            min-height: 100px;
+        }
+        .stats-list-wrapper::-webkit-scrollbar {
+            width: 5px;
+        }
+        .stats-list-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 10px;
+        }
+        .stats-list-wrapper::-webkit-scrollbar-thumb {
+            background: #c4a97d;
+            border-radius: 10px;
+        }
+        .stats-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .stats-empty {
+            text-align: center;
+            color: #b0a08a;
+            padding: 30px 10px;
+            font-size: 11pt;
+            letter-spacing: 0.05em;
+            line-height: 1.8;
+        }
+        .stats-empty .icon-brush {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+            opacity: 0.6;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #fffef9;
+            border-radius: 6px;
+            border: 1px solid rgba(180, 150, 110, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: default;
+            animation: itemIn 0.35s ease-out;
+        }
+        @keyframes itemIn {
+            from {
+                opacity: 0;
+                transform: translateX(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .stat-item.highlight-recent {
+            animation: highlightPulse 0.7s ease-out;
+            border-color: var(--accent-red) !important;
+            box-shadow: 0 0 14px rgba(200, 60, 40, 0.2);
+        }
+        @keyframes highlightPulse {
+            0% {
+                background: #fff0e8;
+                box-shadow: 0 0 20px rgba(200, 60, 40, 0.35);
+            }
+            100% {
+                background: #fffef9;
+                box-shadow: 0 0 0px rgba(200, 60, 40, 0);
+            }
+        }
+        .stat-rank {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11pt;
+            color: #fff;
+            letter-spacing: 0;
+        }
+        .stat-rank.rank-1 {
+            background: var(--rank-gold);
+            box-shadow: 0 2px 6px rgba(180, 150, 90, 0.4);
+        }
+        .stat-rank.rank-2 {
+            background: var(--rank-silver);
+            box-shadow: 0 2px 6px rgba(140, 140, 140, 0.35);
+        }
+        .stat-rank.rank-3 {
+            background: var(--rank-bronze);
+            box-shadow: 0 2px 6px rgba(170, 100, 60, 0.35);
+        }
+        .stat-rank.rank-other {
+            background: #c4b698;
+        }
+        .stat-word {
+            flex: 1 1 auto;
+            font-size: 14pt;
+            font-weight: 600;
+            color: #3d1a0a;
+            letter-spacing: 0.05em;
+            min-width: 0;
+            word-break: keep-all;
+        }
+        .stat-count {
+            flex-shrink: 0;
+            font-size: 12pt;
+            font-weight: 700;
+            color: var(--accent-red);
+            background: rgba(196, 30, 58, 0.07);
+            padding: 2px 10px;
+            border-radius: 14px;
+            min-width: 36px;
+            text-align: center;
+            transition: all 0.25s ease;
+        }
+        .stat-count.bump {
+            animation: countBump 0.35s ease-out;
+        }
+        @keyframes countBump {
+            0% {
+                transform: scale(1.4);
+                background: rgba(196, 30, 58, 0.25);
+            }
+            100% {
+                transform: scale(1);
+                background: rgba(196, 30, 58, 0.07);
+            }
+        }
+
+        .panel-footer {
+            flex-shrink: 0;
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dotted var(--border-light);
+        }
+        .btn-reset {
+            font-family: inherit;
+            font-size: 10pt;
+            letter-spacing: 0.05em;
+            background: transparent;
+            border: 1px solid #c4a97d;
+            color: #7a5c3a;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-reset:hover {
+            background: #f5e8d5;
+            border-color: #a08050;
+            color: #4d3020;
+        }
+        .btn-reset:active {
+            background: #e8d5bb;
+            transform: scale(0.96);
+        }
+
+        .hint-tag {
+            display: inline-block;
+            font-size: 9pt;
+            color: #8b6914;
+            background: rgba(180, 140, 90, 0.08);
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-top: 6px;
+            letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 860px) {
+            .main-wrapper {
+                flex-direction: column;
+                border-radius: 4px;
+                min-height: auto;
+            }
+            .main-wrapper::before,
+            .main-wrapper::after {
+                inset: 4px;
+            }
+            .content-area {
+                flex: 1 1 auto;
+                padding: 24px 16px 20px 16px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-light);
+            }
+            .title-main {
+                font-size: 17pt;
+                padding: 0 10px;
+            }
+            .title-main::before,
+            .title-main::after {
+                width: 28px;
+            }
+            .text-container {
+                font-size: 14pt;
+                line-height: 1.85;
+            }
+            .stats-panel {
+                flex: 0 0 auto;
+                width: 100%;
+                position: relative;
+                top: auto;
+                max-height: none;
+                border-left: none;
+                border-radius: 0 0 4px 4px;
+                padding: 18px 14px 20px 14px;
+                border-top: 1px solid var(--border-light);
+            }
+            .stats-list-wrapper {
+                max-height: 260px;
+            }
+            .stat-item {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+            .stat-word {
+                font-size: 12pt;
+            }
+            .panel-title {
+                font-size: 13pt;
+            }
+            .float-plus {
+                font-size: 15px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            .content-area {
+                padding: 16px 10px 14px 10px;
+            }
+            .title-main {
+                font-size: 15pt;
+                letter-spacing: 0.06em;
+            }
+            .text-container {
+                font-size: 13pt;
+                line-height: 1.75;
+                text-align: left;
+            }
+            .text-container p {
+                text-indent: 1.5em;
+            }
+            .text-container p.para-first {
+                text-indent: 1.5em;
+            }
+            .stats-panel {
+                padding: 12px 8px 14px 8px;
+            }
+            .hard-word {
+                border-bottom-width: 1.5px;
+            }
+            .float-plus {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="content-area">
+            <div class="title-block">
+                <span class="title-main">《本草纲目》序</span>
+                <span class="title-ornament"></span>
+                <div class="title-sub">明 · 王世贞 撰</div>
+            </div>
+            <div class="hint-tag">📖 点击文中<span style="color:#c41e3a;font-weight:600;">红色虚线下划线</span>标记的难字，右侧面板实时统计点击次数</div>
+
+            <div class="text-container" id="textContainer">
+                <p class="para-first">
+                    紀稱：望龍光知古劍；<span class="hard-word" data-word="覘" title="chān，窺視">覘</span>寶氣辨明珠。故萍實商羊，非天明莫洞。<span class="hard-word" data-word="厥" title="jué，其，那">厥</span>後博物稱華，辨字稱康，析寶玉稱<span class="hard-word" data-word="倚頓" title="yǐ dùn，古代富豪">倚頓</span>，亦僅僅晨星耳。
+                </p>
+                <p>
+                    楚<span class="hard-word" data-word="蘄" title="qí，地名，今湖北蘄春">蘄</span>陽李君東璧，一日過予<span class="hard-word" data-word="弇" title="yǎn，地名用字">弇</span>山園謁予，留飲數日。予窥其人，<span class="hard-word" data-word="睟" title="suì，面目清潤">睟</span>然貌也，<span class="hard-word" data-word="癯" title="qú，瘦">癯</span>然身也，津津然<span class="hard-word" data-word="譚" title="tán，通'談'">譚</span>議也，真北斗以南一人。解其裝，無長物，有《本草綱目》數十卷。謂予曰：“時珍，荊楚鄙人也，幼多<span class="hard-word" data-word="羸" title="léi，瘦弱">羸</span>疾，質成<span class="hard-word" data-word="鈍椎" title="dùn zhuī，比喻遲鈍">鈍椎</span>，長<span class="hard-word" data-word="耽" title="dān，沉溺">耽</span>典籍，若<span class="hard-word" data-word="啖" title="dàn，吃">啖</span><span class="hard-word" data-word="蔗飴" title="zhè yí，甘蔗和糖，比喻甘美">蔗飴</span>。遂漁獵羣書，搜羅百氏，凡子、史、經、傳、聲韻、農圃、醫卜、星相、樂府諸家，稍有得處，輒著有數言。古有《本草》一書，自炎皇及漢、梁、唐、宋，下<span class="hard-word" data-word="迨" title="dài，等到">迨</span>國朝，註解羣氏舊矣。第其中<span class="hard-word" data-word="舛" title="chuǎn，差錯">舛</span><span class="hard-word" data-word="謬" title="miù，錯誤">謬</span>差譌遺漏，不可枚數。迺敢奮<span class="hard-word" data-word="編摩" title="biān mó，編纂研究">編摩</span>之志，<span class="hard-word" data-word="僭" title="jiàn，超越本分">僭</span><span class="hard-word" data-word="纂述" title="zuǎn shù，編纂著述">纂述</span>之權。歲曆三十<span class="hard-word" data-word="稔" title="rěn，年">稔</span>，書攷八百餘家，稿凡三易。複者<span class="hard-word" data-word="芟" title="shān，刪除">芟</span>之，<span class="hard-word" data-word="闕" title="quē，缺失">闕</span>者<span class="hard-word" data-word="緝" title="jī，收集整理">緝</span>之，訛者繩之。舊本一千五百一十八種，今增藥三百七十四種，分為一十六部，著成五十二卷。雖非集成，亦粗大備，<span class="hard-word" data-word="僭" title="jiàn，超越本分，謙辭">僭</span>名曰《本草綱目》。願乞一言，以託不朽。”
+                </p>
+                <p>
+                    予開卷細玩，每藥標正名為綱，附釋名為目，正始也；次以集解、辯疑、正誤，詳其土產形狀也；次以氣味、主治、附方，著其體用也。上自<span class="hard-word" data-word="墳典" title="fén diǎn，古代典籍">墳典</span>，下及傳奇，凡有相關，<span class="hard-word" data-word="靡" title="mǐ，無，沒有">靡</span>不備采。如入金穀之園，種色奪目；如登龍君之宮，寶藏悉陳；如對冰壺玉鑑，毛髮可指數也。博而不繁，詳而有要，<span class="hard-word" data-word="綜核" title="zōng hé，綜合考核">綜核</span>究竟，直窺<span class="hard-word" data-word="淵海" title="yuān hǎi，深淵大海，比喻深廣">淵海</span>。茲豈僅以醫書<span class="hard-word" data-word="覯" title="gòu，遇見，看待">覯</span>哉？實性理之精微，格物之通典，帝王之秘<span class="hard-word" data-word="籙" title="lù，符籙">籙</span>，臣民之重寶也。李君用心<span class="hard-word" data-word="嘉惠" title="jiā huì，美好的恩惠">嘉惠</span>何勤哉！
+                </p>
+                <p>
+                    噫！<span class="hard-word" data-word="碔" title="wǔ，似玉的石頭">碔</span>玉莫<span class="hard-word" data-word="剖" title="pōu，破開，分辨">剖</span>，朱紫相傾，弊也久矣。故辯專車之骨，必<span class="hard-word" data-word="竢" title="sì，等待">竢</span>魯儒；博支機之石，必訪賣卜。予方著《<span class="hard-word" data-word="弇" title="yǎn">弇</span>州<span class="hard-word" data-word="卮言" title="zhī yán，謙稱自己的著作">卮言</span>》，<span class="hard-word" data-word="恚" title="huì，怨恨，遺憾">恚</span>博古如《丹鉛<span class="hard-word" data-word="卮言" title="zhī yán">卮言</span>》後乏人也，何幸覩茲集哉！茲集也，藏之深山石室無當，<span class="hard-word" data-word="盍" title="hé，何不">盍</span><span class="hard-word" data-word="鍥" title="qiè，雕刻">鍥</span>之，以共天下後世味《太玄》如子雲者。
+                </p>
+                <p>
+                    時萬曆歲庚寅春上元日，弇州山人鳳洲王世貞拜撰。
+                </p>
+            </div>
+        </div>
+
+        <div class="stats-panel" id="statsPanel">
+            <div class="panel-header">
+                <span class="panel-title">📊 點擊統計</span>
+                <div class="panel-subtitle">難字點擊排行榜</div>
+            </div>
+            <div class="total-clicks" id="totalClicks">
+                累計點擊：<strong>0</strong> 次
+            </div>
+            <div class="stats-list-wrapper" id="statsListWrapper">
+                <ul class="stats-list" id="statsList">
+                    <li class="stats-empty">
+                        <span class="icon-brush">🖌️</span>
+                        尚未點擊任何難字<br>請點擊正文中帶<strong style="color:#c41e3a;">紅色標記</strong>的字
+                    </li>
+                </ul>
+            </div>
+            <div class="panel-footer">
+                <button class="btn-reset" id="btnReset" title="清空所有統計">⟳ 清空統計</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const wordStats = {};
+            let totalClicks = 0;
+            let recentClickedWord = null;
+            let resetTimer = null;
+
+            const statsList = document.getElementById('statsList');
+            const statsListWrapper = document.getElementById('statsListWrapper');
+            const totalClicksEl = document.getElementById('totalClicks');
+            const btnReset = document.getElementById('btnReset');
+            const textContainer = document.getElementById('textContainer');
+
+            const allHardWords = document.querySelectorAll('.hard-word');
+            allHardWords.forEach(el => {
+                const word = el.getAttribute('data-word');
+                if (word && !(word in wordStats)) {
+                    wordStats[word] = 0;
+                }
+            });
+
+            function createFloatPlus(x, y, word) {
+                const floatEl = document.createElement('span');
+                floatEl.className = 'float-plus';
+                floatEl.textContent = `+1`;
+                floatEl.style.left = x + 'px';
+                floatEl.style.top = y + 'px';
+                document.body.appendChild(floatEl);
+
+                floatEl.addEventListener('animationend', () => {
+                    if (floatEl.parentNode) {
+                        floatEl.parentNode.removeChild(floatEl);
+                    }
+                });
+                setTimeout(() => {
+                    if (floatEl.parentNode) {
+                        floatEl.parentNode.removeChild(floatEl);
+                    }
+                }, 1000);
+            }
+
+            function updateStatsPanel(clickedWord) {
+                const entries = Object.entries(wordStats)
+                    .filter(([, count]) => count > 0)
+                    .sort((a, b) => b[1] - a[1]);
+
+                totalClicksEl.innerHTML = '累計點擊：<strong>' + totalClicks + '</strong> 次';
+
+                if (entries.length === 0) {
+                    statsList.innerHTML = `
+                        <li class="stats-empty">
+                            <span class="icon-brush">🖌️</span>
+                            尚未點擊任何難字<br>請點擊正文中帶<strong style="color:#c41e3a;">紅色標記</strong>的字
+                        </li>`;
+                    recentClickedWord = null;
+                    return;
+                }
+
+                let html = '';
+                entries.forEach(([word, count], index) => {
+                    const rank = index + 1;
+                    let rankClass = 'rank-other';
+                    if (rank === 1) rankClass = 'rank-1';
+                    else if (rank === 2) rankClass = 'rank-2';
+                    else if (rank === 3) rankClass = 'rank-3';
+
+                    const isRecent = (word === clickedWord) ? ' highlight-recent' : '';
+
+                    html += `
+                        <li class="stat-item${isRecent}" data-word="${escapeHtml(word)}">
+                            <span class="stat-rank ${rankClass}">${rank}</span>
+                            <span class="stat-word">${escapeHtml(word)}</span>
+                            <span class="stat-count" id="count-${escapeAttr(word)}">${count}</span>
+                        </li>`;
+                });
+                statsList.innerHTML = html;
+
+                if (clickedWord && entries.length > 0) {
+                    recentClickedWord = clickedWord;
+                    setTimeout(() => {
+                        const targetItem = statsList.querySelector('.highlight-recent');
+                        if (targetItem) {
+                            targetItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        setTimeout(() => {
+                            const items = statsList.querySelectorAll('.highlight-recent');
+                            items.forEach(item => item.classList.remove('highlight-recent'));
+                        }, 800);
+                    }, 50);
+
+                    setTimeout(() => {
+                        const countEl = document.getElementById('count-' + escapeAttr(clickedWord));
+                        if (countEl) {
+                            countEl.classList.add('bump');
+                            countEl.addEventListener('animationend', function() {
+                                this.classList.remove('bump');
+                            }, { once: true });
+                        }
+                    }, 100);
+                }
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function escapeAttr(str) {
+                return str.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_');
+            }
+
+            textContainer.addEventListener('click', function(e) {
+                const hardWordEl = e.target.closest('.hard-word');
+                if (!hardWordEl) return;
+
+                const word = hardWordEl.getAttribute('data-word');
+                if (!word) return;
+
+                if (word in wordStats) {
+                    wordStats[word] += 1;
+                } else {
+                    wordStats[word] = 1;
+                }
+                totalClicks += 1;
+
+                hardWordEl.classList.remove('flash-click');
+                void hardWordEl.offsetWidth;
+                hardWordEl.classList.add('flash-click');
+                hardWordEl.addEventListener('animationend', function() {
+                    this.classList.remove('flash-click');
+                }, { once: true });
+
+                const rect = hardWordEl.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2 - 15;
+                const topY = rect.top - 8;
+                createFloatPlus(centerX, topY, word);
+
+                updateStatsPanel(word);
+            });
+
+            textContainer.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    const hardWordEl = e.target.closest('.hard-word');
+                    if (hardWordEl) {
+                        e.preventDefault();
+                        hardWordEl.click();
+                    }
+                }
+            });
+
+            btnReset.addEventListener('click', function() {
+                if (totalClicks > 0) {
+                    if (!confirm('確定要清空所有點擊統計嗎？此操作不可恢復。')) {
+                        return;
+                    }
+                }
+                for (const key in wordStats) {
+                    wordStats[key] = 0;
+                }
+                totalClicks = 0;
+                recentClickedWord = null;
+                updateStatsPanel(null);
+                statsListWrapper.scrollTop = 0;
+
+                btnReset.textContent = '✓ 已清空';
+                btnReset.style.color = '#4a7c3f';
+                btnReset.style.borderColor = '#4a7c3f';
+                clearTimeout(resetTimer);
+                resetTimer = setTimeout(() => {
+                    btnReset.textContent = '⟳ 清空統計';
+                    btnReset.style.color = '#7a5c3a';
+                    btnReset.style.borderColor = '#c4a97d';
+                }, 1500);
+            });
+
+            updateStatsPanel(null);
+
+            const isMobile = window.innerWidth <= 860;
+            if (isMobile) {
+                const panelHeader = document.querySelector('.panel-header');
+                if (panelHeader) {
+                    panelHeader.style.cursor = 'default';
+                }
+            }
+
+            console.log('📖 《本草纲目》序 — 难字点击统计已就绪');
+            console.log('  标记难字数量：' + allHardWords.length + ' 个');
+            console.log('  点击正文中红色虚线下划线标记的字即可开始互动');
+            console.log('  右侧面板实时显示点击排行榜');
+        })();
+    </script>
+</body>
+</html>
